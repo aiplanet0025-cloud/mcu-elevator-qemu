@@ -18,17 +18,17 @@
 
 ### 2. 100% 静态内存分配 (Safety-Hardened Design)
 在汽车电子、航空航天及生命安全相关的工业嵌入式设备中，动态内存分配（如 `malloc`、动态创建 Task）因其可能产生**内存碎片**并在长期运行中引发突发性死机，是严厉禁止的。
-*   本系统将 **所有的应用任务**（如电梯控制、命令行交互）以及 **所有的进程通信机制**（如消息队列、互斥锁）全部转型为**静态内存分配 (`xTaskCreateStatic` 和 `xQueueCreateStatic`)**。
+*   本系统将 **所有的应用任务**（如电梯控制、命令行交互）以及 **所有的进程通信机制**（如消息队列、互斥锁）全部分配为**静态内存分配 (`xTaskCreateStatic` 和 `xQueueCreateStatic`)**。
 *   静态堆栈和控制块在编译阶段即在系统的 `.bss` 段锁定。只要固件编译通过，在物理上就**绝对不会发生“因堆内存耗尽/碎片化而死机”**的系统崩溃事故，确保了系统的高确定性。
 
 ### 3. 高度防护的内存边界管理 (MSP / PSP 隔离)
 针对 ARM Cortex-M 的双堆栈指针机制（MSP/PSP）进行了严密的防御性设计：
 *   **系统启动期 (MSP)**：重构了底层的栈大小参数（`-DSTACK_SIZE=2048`），彻底解决了在 `main()` 函数中由于标准 C 库 `vsnprintf` 深度压栈导致的启动期主栈溢出问题。
-*   **任务运行期 (PSP)**：通过对 `vsnprintf` 最大栈开销的科学定量测算，将各静态任务的局部栈分配优化为 `400` 字 (1600 字节)，在仅有 64 KB SRAM 的严苛芯片空间限制下，实现了安全性与空间利用率的最佳平衡。
+*   **任务运行期 (PSP)**：通过对 `vsnprintf` 最大栈开销的科学定量测算，将各静态任务的局部栈分配限制在 `400` 字 (1600 字节)，在仅有 64 KB SRAM 的严苛芯片空间限制下，实现了安全性与空间利用率的最佳平衡。
 
 ### 4. 线程安全的实时诊断终端 (Interactive CLI Console)
 设计并实现了一个类似 Linux 终端的异步交互式命令行：
-*   **硬件回显 (Echo) 与删除支持**：支持字符输入回显及 VT100 退格转义（Backspace）物理擦除。
+*   **字符回显 (Echo) 与删除支持**：支持字符输入回显及 VT100 退格转义（Backspace）物理擦除。
 *   **非阻塞指令解析**：通过非阻塞 UART 读取配合 FreeRTOS 队列，用户输入 `status` 即可异步查询正在运行中的电梯状态（如位置、方向、电机状态），完美展现了实时操作系统的并发多任务设计优势。
 
 ---
@@ -39,6 +39,7 @@
 /workspaces/mcu-elevator-qemu
 ├── CMakeLists.txt             # 顶层 CMake 配置文件，负责交叉编译与标志配置
 ├── standalone.ld              # 针对 QEMU 模拟芯片 (LM3S6965) 的链接脚本
+├── setup.sh                   # 一键自动化环境部署与代码初始化脚本
 ├── src/
 │   ├── main.c                 # 系统入口，初始化硬件、静态 OS 资源并开启调度器
 │   ├── FreeRTOSConfig.h       # FreeRTOS 配置文件，开启互斥锁、静态分配及断言重定向
@@ -68,34 +69,52 @@ sudo apt-get update
 sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch qemu-system-arm cmake make git
 ```
 
-### 拉取 Git 外部子模块（必执行）
-项目使用了 FreeRTOS 官方仓库，在首次克隆后需初始化内核源码子模块：
+---
+
+## 🚀 一键快速初始化 (One-Click Setup)
+
+为了降低环境迁移成本，项目提供了一个高度自动化的初始化脚本 `setup.sh`。该脚本负责全自动拉取依赖、提取最轻量化的内核文件，并自动写入所有重构优化后的核心源码。
+
+在项目根目录下直接运行：
+
 ```bash
-git submodule update --init --recursive
+# 1. 赋予脚本执行权限
+chmod +x setup.sh
+
+# 2. 执行一键初始化
+./setup.sh
 ```
+
+### 📋 脚本执行的自动化流程：
+1. **依赖检索**：检测并增量克隆外部官方 FreeRTOS 仓库。
+2. **内核裁剪**：提取最纯净的 FreeRTOS Kernel 核心源码子模块。
+3. **结构重组**：自动创建高内聚、低耦合的模块化分层目录。
+4. **底层迁移**：提取芯片链接脚本 `standalone.ld`、系统配置文件 `FreeRTOSConfig.h` 以及启动向量表 `startup.c`。
+5. **代码写入**：写入重构后的 BSP 驱动、纯 C 状态机、线程安全日志以及交互式 CLI 诊断串口代码。
+6. **热修应用**：在链接脚本尾部追加过滤指令，强行丢弃外部标准库（如 `libc_nano.a`）引入的 `.eh_frame`，规避 GCC 13.x+ 下的内存重叠冲突。
 
 ---
 
 ## ⚙️ 项目编译指南
 
-本项目使用 **CMake** 作为构建系统，并强制开启了针对嵌入式裸机的工具链配置，并过滤掉了第三方标准库中的 `.eh_frame` 调试段，解决内存段重合冲突。
+完成一键初始化后，即可使用 **CMake** 进行编译：
 
 ```bash
-# 1. 创建并进入 build 目录
-mkdir -p build && cd build
+# 1. 进入 build 目录（由 setup.sh 自动创建）
+cd build
 
-# 2. 生成 Makefile
+# 2. 运行 CMake 重新配置（已配置静态编译检测规避）
 cmake ../
 
-# 3. 编译（将生成 RTOSDemo.elf 固件）
+# 3. 编译（将生成最终的 RTOSDemo 固件）
 make
 ```
 
 ---
 
-## 🚀 QEMU 仿真与人机交互
+## 🎮 QEMU 仿真与人机交互
 
-在 `build` 目录下，执行以下命令在 QEMU 的 Cortex-M3 虚拟机器上启动该固件：
+在 `build` 目录下，执行以下命令在 QEMU 的 Cortex-M3 虚拟机器上启动固件：
 
 ```bash
 qemu-system-arm -M lm3s6965evb -kernel RTOSDemo -nographic
@@ -112,10 +131,10 @@ qemu-system-arm -M lm3s6965evb -kernel RTOSDemo -nographic
 elevator> 
 ```
 
-你可以在控制台输入以下命令与系统实时交互：
+你可以在控制台输入以下指令进行实时设备诊断与呼叫交互：
 
 *   **`help`**：查看支持的指令菜单。
-*   **`status`**：即时跨任务查询电梯状态。
+*   **`status`**：即时跨任务查询电梯物理状态。
 *   **`call <1-3>`**：呼叫电梯。例如输入 `call 3` 并按下回车，电梯状态机即被唤醒并开始模拟物理位移，此时你可以尝试输入 `status` 进行并发查询：
 
 ```text
@@ -136,3 +155,4 @@ elevator>   >> Elevator arrived at floor 2.
 ### 🚪 如何退出模拟器
 由于 QEMU 接管了终端，若要退出模拟器回到 Linux 控制台，请在终端中按下：
 *   同时按下 **`Ctrl + A`**，松开后，按下字母 **`X`** 键。
+```
