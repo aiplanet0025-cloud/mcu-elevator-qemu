@@ -4,7 +4,7 @@
 # compile C with arm-none-eabi-gcc
 C_DEFINES = 
 
-C_INCLUDES = -I/workspaces/mcu-elevator-qemu/src -I/workspaces/mcu-elevator-qemu/src/bsp -I/workspaces/mcu-elevator-qemu/src/os_tasks -I/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/include -I/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3
+C_INCLUDES = -I/workspaces/mcu-elevator-qemu/src -I/workspaces/mcu-elevator-qemu/src/bsp -I/workspaces/mcu-elevator-qemu/src/os_tasks -I/workspaces/mcu-elevator-qemu/src/app -I/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/include -I/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3
 
 C_FLAGS = -mcpu=cortex-m3 -mthumb -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -DSTACK_SIZE=2048
 

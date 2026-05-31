@@ -81,12 +81,12 @@ clean: CMakeFiles/RTOSDemo.dir/clean
 CMakeFiles/RTOSDemo.dir/all:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/depend
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/build
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11 "Built target RTOSDemo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=1,2,3,4,5,6,7,8,9,10,11,12 "Built target RTOSDemo"
 .PHONY : CMakeFiles/RTOSDemo.dir/all
 
 # Build rule for subdir invocation for target.
 CMakeFiles/RTOSDemo.dir/rule: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/mcu-elevator-qemu/build/CMakeFiles 11
+	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/mcu-elevator-qemu/build/CMakeFiles 12
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 CMakeFiles/RTOSDemo.dir/all
 	$(CMAKE_COMMAND) -E cmake_progress_start /workspaces/mcu-elevator-qemu/build/CMakeFiles 0
 .PHONY : CMakeFiles/RTOSDemo.dir/rule

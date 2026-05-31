@@ -11,6 +11,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o.d"
   "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o"
   "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o.d"
+  "CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o"
+  "CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o.d"
   "CMakeFiles/RTOSDemo.dir/src/bsp/bsp_uart.c.o"
   "CMakeFiles/RTOSDemo.dir/src/bsp/bsp_uart.c.o.d"
   "CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o"

@@ -125,10 +125,24 @@ CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.s: cmake_force
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.s"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /workspaces/mcu-elevator-qemu/src/os_tasks/logger.c -o CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.s
 
+CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o: CMakeFiles/RTOSDemo.dir/flags.make
+CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o: /workspaces/mcu-elevator-qemu/src/app/elevator_fsm.c
+CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o"
+	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o -MF CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o.d -o CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o -c /workspaces/mcu-elevator-qemu/src/app/elevator_fsm.c
+
+CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.i: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Preprocessing C source to CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.i"
+	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -E /workspaces/mcu-elevator-qemu/src/app/elevator_fsm.c > CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.i
+
+CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.s: cmake_force
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green "Compiling C source to assembly CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.s"
+	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -S /workspaces/mcu-elevator-qemu/src/app/elevator_fsm.c -o CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.s
+
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o: CMakeFiles/RTOSDemo.dir/flags.make
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o: /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/tasks.c
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_5) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o -MF CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o.d -o CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o -c /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/tasks.c
 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.i: cmake_force
@@ -142,7 +156,7 @@ CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.s: cmake_force
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o: CMakeFiles/RTOSDemo.dir/flags.make
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o: /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/queue.c
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_6) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o -MF CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o.d -o CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o -c /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/queue.c
 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.i: cmake_force
@@ -156,7 +170,7 @@ CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.s: cmake_force
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o: CMakeFiles/RTOSDemo.dir/flags.make
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o: /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/list.c
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_7) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o -MF CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o.d -o CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o -c /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/list.c
 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.i: cmake_force
@@ -170,7 +184,7 @@ CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.s: cmake_force
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o: CMakeFiles/RTOSDemo.dir/flags.make
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o: /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/timers.c
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_8) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o -MF CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o.d -o CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o -c /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/timers.c
 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.i: cmake_force
@@ -184,7 +198,7 @@ CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.s: cmake_force
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o: CMakeFiles/RTOSDemo.dir/flags.make
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o: /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_9) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o -MF CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o.d -o CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.o -c /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c
 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.i: cmake_force
@@ -198,7 +212,7 @@ CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/port.c.s: 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o: CMakeFiles/RTOSDemo.dir/flags.make
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o: /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o: CMakeFiles/RTOSDemo.dir/compiler_depend.ts
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_10) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Building C object CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o"
 	arm-none-eabi-gcc $(C_DEFINES) $(C_INCLUDES) $(C_FLAGS) -MD -MT CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o -MF CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o.d -o CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o -c /workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c
 
 CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.i: cmake_force
@@ -215,6 +229,7 @@ RTOSDemo_OBJECTS = \
 "CMakeFiles/RTOSDemo.dir/src/bsp/bsp_uart.c.o" \
 "CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o" \
 "CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.o" \
+"CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o" \
 "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o" \
 "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o" \
 "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o" \
@@ -229,6 +244,7 @@ RTOSDemo: CMakeFiles/RTOSDemo.dir/src/main.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/src/bsp/bsp_uart.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.o
+RTOSDemo: CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/list.c.o
@@ -237,7 +253,7 @@ RTOSDemo: CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/GCC/ARM_CM3/
 RTOSDemo: CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/portable/MemMang/heap_4.c.o
 RTOSDemo: CMakeFiles/RTOSDemo.dir/build.make
 RTOSDemo: CMakeFiles/RTOSDemo.dir/link.txt
-	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_11) "Linking C executable RTOSDemo"
+	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir=/workspaces/mcu-elevator-qemu/build/CMakeFiles --progress-num=$(CMAKE_PROGRESS_12) "Linking C executable RTOSDemo"
 	$(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/RTOSDemo.dir/link.txt --verbose=$(VERBOSE)
 
 # Rule to build all files generated by this target.

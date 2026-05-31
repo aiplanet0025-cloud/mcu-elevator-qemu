@@ -14,6 +14,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/queue.c" "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/queue.c.o.d"
   "/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/tasks.c" "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/tasks.c.o.d"
   "/workspaces/mcu-elevator-qemu/FreeRTOS/FreeRTOS/Source/timers.c" "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.o.d"
+  "/workspaces/mcu-elevator-qemu/src/app/elevator_fsm.c" "CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o.d"
   "/workspaces/mcu-elevator-qemu/src/bsp/bsp_uart.c" "CMakeFiles/RTOSDemo.dir/src/bsp/bsp_uart.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/bsp/bsp_uart.c.o.d"
   "/workspaces/mcu-elevator-qemu/src/bsp/startup.c" "CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o.d"
   "/workspaces/mcu-elevator-qemu/src/main.c" "CMakeFiles/RTOSDemo.dir/src/main.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/main.c.o.d"

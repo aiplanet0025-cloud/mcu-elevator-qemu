@@ -273,6 +273,30 @@ FreeRTOS/FreeRTOS/Source/timers.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/FreeRTOS/FreeRTOS/Source/timers.c.s
 .PHONY : FreeRTOS/FreeRTOS/Source/timers.c.s
 
+src/app/elevator_fsm.o: src/app/elevator_fsm.c.o
+.PHONY : src/app/elevator_fsm.o
+
+# target to build an object file
+src/app/elevator_fsm.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.o
+.PHONY : src/app/elevator_fsm.c.o
+
+src/app/elevator_fsm.i: src/app/elevator_fsm.c.i
+.PHONY : src/app/elevator_fsm.i
+
+# target to preprocess a source file
+src/app/elevator_fsm.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.i
+.PHONY : src/app/elevator_fsm.c.i
+
+src/app/elevator_fsm.s: src/app/elevator_fsm.c.s
+.PHONY : src/app/elevator_fsm.s
+
+# target to generate assembly for a file
+src/app/elevator_fsm.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/app/elevator_fsm.c.s
+.PHONY : src/app/elevator_fsm.c.s
+
 src/bsp/bsp_uart.o: src/bsp/bsp_uart.c.o
 .PHONY : src/bsp/bsp_uart.o
 
@@ -396,6 +420,9 @@ help:
 	@echo "... FreeRTOS/FreeRTOS/Source/timers.o"
 	@echo "... FreeRTOS/FreeRTOS/Source/timers.i"
 	@echo "... FreeRTOS/FreeRTOS/Source/timers.s"
+	@echo "... src/app/elevator_fsm.o"
+	@echo "... src/app/elevator_fsm.i"
+	@echo "... src/app/elevator_fsm.s"
 	@echo "... src/bsp/bsp_uart.o"
 	@echo "... src/bsp/bsp_uart.i"
 	@echo "... src/bsp/bsp_uart.s"
