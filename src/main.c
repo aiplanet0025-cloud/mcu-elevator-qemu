@@ -4,65 +4,43 @@
 #include "bsp_uart.h"
 #include "logger.h"
 #include "elevator_fsm.h"
+#include "task_cli.h" // 引入 CLI 任务
 #include <stdio.h>
 
 // 1. 定义多任务通信队列句柄
 QueueHandle_t xFloorQueue = NULL;
 
+// 2. 将状态机实例提升为全局变量，供 CLI 任务跨任务安全读取
+ElevatorFsm g_elevator_fsm;
+
 typedef struct {
     int targetFloor;
 } ElevatorEvent;
 
-/* --- 任务一：串口输入扫描任务（低优先级） --- */
-void vTaskInput(void *pvParameters) {
-    char c;
-    ElevatorEvent xEvent;
-    
-    Logger_Info("\r\n================================\r\n");
-    Logger_Info("  Elevator OS Running (FreeRTOS) \r\n");
-    Logger_Info("  Press '1', '2', '3' to call    \r\n");
-    Logger_Info("================================\r\n");
-
-    for (;;) {
-        if (BSP_UART_GetCharNonBlocking(&c)) {
-            if (c >= '1' && c <= '3') {
-                xEvent.targetFloor = c - '0';
-                
-                // 将指令塞入消息队列
-                xQueueSend(xFloorQueue, &xEvent, 0); 
-                Logger_Info("\r\n[Input Task] Key pressed: calling floor %d...\r\n", xEvent.targetFloor);
-            }
-        }
-        vTaskDelay(pdMS_TO_TICKS(100)); // 每 100ms 轮询一次输入
-    }
-}
-
-/* --- 任务二：电梯主控制任务（高优先级） --- */
+/* --- 任务：电梯主控制任务（高优先级） --- */
 void vTaskElevator(void *pvParameters) {
-    ElevatorFsm myElevator;
-    Elevator_FsmInit(&myElevator);
+    Elevator_FsmInit(&g_elevator_fsm); // 初始化全局状态机
     
     ElevatorEvent xReceivedEvent;
     char log_buf[128];
 
     for (;;) {
         // 如果电梯处于待机状态，则挂起任务，无限期阻塞等待队列事件
-        if (myElevator.state == ELEVATOR_STATE_IDLE) {
+        if (g_elevator_fsm.state == ELEVATOR_STATE_IDLE) {
             if (xQueueReceive(xFloorQueue, &xReceivedEvent, portMAX_DELAY) == pdTRUE) {
-                Elevator_FsmSetTarget(&myElevator, xReceivedEvent.targetFloor);
+                Elevator_FsmSetTarget(&g_elevator_fsm, xReceivedEvent.targetFloor);
             }
         }
 
-        // 定时轮询时间：位移状态每层花费 1000ms；开门状态下为了精确处理 2s 的关门定时，每 500ms 迭代一次
         int tick_time_ms = 1000;
-        if (myElevator.state == ELEVATOR_STATE_DOOR_OPEN) {
+        if (g_elevator_fsm.state == ELEVATOR_STATE_DOOR_OPEN) {
             tick_time_ms = 500;
         }
 
-        // 迭代纯 C 状态机
-        if (Elevator_FsmTick(&myElevator, tick_time_ms, log_buf, sizeof(log_buf))) {
+        // 迭代状态机
+        if (Elevator_FsmTick(&g_elevator_fsm, tick_time_ms, log_buf, sizeof(log_buf))) {
             if (log_buf[0] != '\0') {
-                Logger_Info(log_buf); // 输出经过互斥锁保护的安全日志
+                Logger_Info(log_buf); 
             }
         }
 
@@ -75,14 +53,14 @@ int main(void) {
     BSP_UART_Init();
     Logger_Init();
 
-    // 1. 创建队列（深度为 10）
+    // 创建队列（深度为 10）
     xFloorQueue = xQueueCreate(10, sizeof(ElevatorEvent));
 
-    // 2. 创建任务（分配 512 字的安全栈空间）
-    xTaskCreate(vTaskInput, "Input", 512, NULL, 1, NULL);
+    // 创建任务（用 CLI 诊断终端替换旧的数字键扫描）
+    xTaskCreate(vTaskCLI, "CLI", 512, NULL, 1, NULL); 
     xTaskCreate(vTaskElevator, "Elevator", 512, NULL, 2, NULL);
 
-    // 3. 启动 FreeRTOS 调度器
+    // 启动 FreeRTOS 调度器
     vTaskStartScheduler();
 
     for (;;);

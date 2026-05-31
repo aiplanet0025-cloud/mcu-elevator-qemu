@@ -26,6 +26,7 @@ set(PROJECT_SOURCES
     src/bsp/bsp_uart.c
     src/bsp/startup.c
     src/os_tasks/logger.c
+    src/os_tasks/task_cli.c
     src/app/elevator_fsm.c                         # <--- 新加入的文件
 )
 

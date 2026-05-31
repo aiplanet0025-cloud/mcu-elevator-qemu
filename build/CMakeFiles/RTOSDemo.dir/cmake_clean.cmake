@@ -21,6 +21,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/RTOSDemo.dir/src/main.c.o.d"
   "CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.o"
   "CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.o.d"
+  "CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.o"
+  "CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.o.d"
   "RTOSDemo"
   "RTOSDemo.pdb"
 )

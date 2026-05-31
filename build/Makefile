@@ -393,6 +393,30 @@ src/os_tasks/logger.c.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.s
 .PHONY : src/os_tasks/logger.c.s
 
+src/os_tasks/task_cli.o: src/os_tasks/task_cli.c.o
+.PHONY : src/os_tasks/task_cli.o
+
+# target to build an object file
+src/os_tasks/task_cli.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.o
+.PHONY : src/os_tasks/task_cli.c.o
+
+src/os_tasks/task_cli.i: src/os_tasks/task_cli.c.i
+.PHONY : src/os_tasks/task_cli.i
+
+# target to preprocess a source file
+src/os_tasks/task_cli.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.i
+.PHONY : src/os_tasks/task_cli.c.i
+
+src/os_tasks/task_cli.s: src/os_tasks/task_cli.c.s
+.PHONY : src/os_tasks/task_cli.s
+
+# target to generate assembly for a file
+src/os_tasks/task_cli.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/RTOSDemo.dir/build.make CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.s
+.PHONY : src/os_tasks/task_cli.c.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -435,6 +459,9 @@ help:
 	@echo "... src/os_tasks/logger.o"
 	@echo "... src/os_tasks/logger.i"
 	@echo "... src/os_tasks/logger.s"
+	@echo "... src/os_tasks/task_cli.o"
+	@echo "... src/os_tasks/task_cli.i"
+	@echo "... src/os_tasks/task_cli.s"
 .PHONY : help
 
 

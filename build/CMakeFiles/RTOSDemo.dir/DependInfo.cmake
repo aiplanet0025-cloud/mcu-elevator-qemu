@@ -19,6 +19,7 @@ set(CMAKE_DEPENDS_DEPENDENCY_FILES
   "/workspaces/mcu-elevator-qemu/src/bsp/startup.c" "CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/bsp/startup.c.o.d"
   "/workspaces/mcu-elevator-qemu/src/main.c" "CMakeFiles/RTOSDemo.dir/src/main.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/main.c.o.d"
   "/workspaces/mcu-elevator-qemu/src/os_tasks/logger.c" "CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/os_tasks/logger.c.o.d"
+  "/workspaces/mcu-elevator-qemu/src/os_tasks/task_cli.c" "CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.o" "gcc" "CMakeFiles/RTOSDemo.dir/src/os_tasks/task_cli.c.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.
