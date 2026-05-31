@@ -1,0 +1,3 @@
+/workspaces/mcu-elevator-qemu/build/CMakeFiles/RTOSDemo.dir
+/workspaces/mcu-elevator-qemu/build/CMakeFiles/edit_cache.dir
+/workspaces/mcu-elevator-qemu/build/CMakeFiles/rebuild_cache.dir
