@@ -4,7 +4,7 @@
 #include "bsp_uart.h"
 #include "logger.h"
 #include "elevator_fsm.h"
-#include "task_cli.h" // 引入 CLI 任务
+#include "task_cli.h"
 #include <stdio.h>
 
 // 1. 定义多任务通信队列句柄
@@ -16,6 +16,27 @@ ElevatorFsm g_elevator_fsm;
 typedef struct {
     int targetFloor;
 } ElevatorEvent;
+
+/* ==================================================================== */
+/* 工业级安全加固：在编译期定义所有任务和队列的静态内存缓冲区             */
+/* ==================================================================== */
+
+// 1. CLI 任务的静态内存分配
+#define CLI_TASK_STACK_SIZE 400
+static StaticTask_t xCLITaskBuffer;
+static StackType_t xCLIStack[ CLI_TASK_STACK_SIZE ];
+
+// 2. Elevator 任务的静态内存分配
+#define ELEVATOR_TASK_STACK_SIZE 400
+static StaticTask_t xElevatorTaskBuffer;
+static StackType_t xElevatorStack[ ELEVATOR_TASK_STACK_SIZE ];
+
+// 3. 消息队列的静态内存分配（长度为 10）
+#define QUEUE_LENGTH 10
+#define ITEM_SIZE    sizeof(ElevatorEvent)
+static StaticQueue_t xStaticQueue;
+static uint8_t ucQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
+
 
 /* --- 任务：电梯主控制任务（高优先级） --- */
 void vTaskElevator(void *pvParameters) {
@@ -53,21 +74,43 @@ int main(void) {
     BSP_UART_Init();
     Logger_Init();
 
-    // 创建队列（深度为 10）
-    xFloorQueue = xQueueCreate(10, sizeof(ElevatorEvent));
+    // 1. 工业安全加固：使用静态 API 创建队列，杜绝运行时内存碎片
+    xFloorQueue = xQueueCreateStatic(
+        QUEUE_LENGTH, 
+        ITEM_SIZE, 
+        ucQueueStorageArea, 
+        &xStaticQueue
+    );
 
-    // 创建任务（用 CLI 诊断终端替换旧的数字键扫描）
-    xTaskCreate(vTaskCLI, "CLI", 512, NULL, 1, NULL); 
-    xTaskCreate(vTaskElevator, "Elevator", 512, NULL, 2, NULL);
+    // 2. 工业安全加固：使用静态 API 创建系统应用任务
+    xTaskCreateStatic(
+        vTaskCLI, 
+        "CLI", 
+        CLI_TASK_STACK_SIZE, 
+        NULL, 
+        1, 
+        xCLIStack, 
+        &xCLITaskBuffer
+    ); 
 
-    // 启动 FreeRTOS 调度器
+    xTaskCreateStatic(
+        vTaskElevator, 
+        "Elevator", 
+        ELEVATOR_TASK_STACK_SIZE, 
+        NULL, 
+        2, 
+        xElevatorStack, 
+        &xElevatorTaskBuffer
+    );
+
+    // 3. 启动 FreeRTOS 调度器
     vTaskStartScheduler();
 
     for (;;);
     return 0;
 }
 
-/* --- 必需的空闲与系统钩子函数（保持不变） --- */
+/* --- 必需的空闲与系统静态内存分配钩子函数（保持不变） --- */
 void vApplicationMallocFailedHook(void) { for (;;); }
 void vApplicationIdleHook(void) {}
 void vApplicationStackOverflowHook(TaskHandle_t pxTask, char *pcTaskName) { (void)pxTask; (void)pcTaskName; for (;;); }
