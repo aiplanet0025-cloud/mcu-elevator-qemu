@@ -1,0 +1,27 @@
+name: Build firmware
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y gcc-arm-none-eabi qemu-system-arm cmake make git
+
+      - name: Fetch FreeRTOS dependency
+        run: ./setup.sh
+
+      - name: Configure firmware
+        run: cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake
+
+      - name: Build firmware
+        run: cmake --build build

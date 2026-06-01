@@ -41,7 +41,7 @@
 ├── cmake/
 │   └── toolchain-arm-none-eabi.cmake  # ARM 裸机交叉编译工具链配置
 ├── standalone.ld              # 针对 QEMU 模拟芯片 (LM3S6965) 的链接脚本
-├── setup.sh                   # 一键自动化环境部署与代码初始化脚本
+├── setup.sh                   # 依赖拉取与本地环境检查脚本（不会重写业务源码）
 ├── src/
 │   ├── main.c                 # 系统入口，初始化硬件、静态 OS 资源并开启调度器
 │   ├── FreeRTOSConfig.h       # FreeRTOS 配置文件，开启互斥锁、静态分配及断言重定向
@@ -73,9 +73,9 @@ sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch qemu-system-arm cmake ma
 
 ---
 
-## 🚀 一键快速初始化 (One-Click Setup)
+## 🚀 依赖初始化 (Dependency Setup)
 
-为了降低环境迁移成本，项目提供了一个高度自动化的初始化脚本 `setup.sh`。该脚本负责全自动拉取依赖、提取最轻量化的内核文件，并自动写入所有重构优化后的核心源码。
+`setup.sh` 只负责本地环境检查和外部依赖拉取：它会下载或更新官方 FreeRTOS 仓库，并初始化 `FreeRTOS/Source` 子模块。脚本不会重写 `src/`、`cmake/`、`CMakeLists.txt` 或其它业务源码，避免开发者本地改动被初始化流程覆盖。
 
 在项目根目录下直接运行：
 
@@ -83,23 +83,22 @@ sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch qemu-system-arm cmake ma
 # 1. 赋予脚本执行权限
 chmod +x setup.sh
 
-# 2. 执行一键初始化
+# 2. 拉取/更新 FreeRTOS 依赖
 ./setup.sh
 ```
 
 ### 📋 脚本执行的自动化流程：
-1. **依赖检索**：检测并增量克隆外部官方 FreeRTOS 仓库。
-2. **内核裁剪**：提取最纯净的 FreeRTOS Kernel 核心源码子模块。
-3. **结构重组**：自动创建高内聚、低耦合的模块化分层目录。
-4. **底层迁移**：提取芯片链接脚本 `standalone.ld`、系统配置文件 `FreeRTOSConfig.h` 以及启动向量表 `startup.c`。
-5. **代码写入**：写入重构后的 BSP 驱动、纯 C 状态机、线程安全日志以及交互式 CLI 诊断串口代码。
-6. **热修应用**：在链接脚本尾部追加过滤指令，强行丢弃外部标准库（如 `libc_nano.a`）引入的 `.eh_frame`，规避 GCC 13.x+ 下的内存重叠冲突。
+1. **工具检查**：要求 `git` 存在；对 `cmake`、`make`、`arm-none-eabi-gcc`、`qemu-system-arm` 等构建/仿真工具给出缺失警告，但不阻止依赖拉取。
+2. **依赖检索**：如果 `FreeRTOS/` 不存在，则克隆官方 FreeRTOS 仓库并拉取子模块。
+3. **安全更新**：如果 `FreeRTOS/` 已经是 git checkout，则执行 fast-forward 更新和子模块初始化。
+4. **覆盖保护**：如果 `FreeRTOS/` 是非空、非 git 目录，脚本会先询问是否覆盖；在 CI 等非交互环境中会拒绝覆盖，除非显式传入 `./setup.sh --force`。
+5. **依赖校验**：确认 `FreeRTOS/FreeRTOS/Source/tasks.c` 存在，否则给出明确错误并终止。
 
 ---
 
 ## ⚙️ 项目编译指南
 
-完成一键初始化后，即可使用 **CMake** 进行编译。首次配置时必须显式传入 ARM 裸机工具链文件，确保 CMake 在 `project()` 语言检测前就选择 `arm-none-eabi-gcc`，而不是宿主机编译器：
+完成依赖初始化后，即可使用 **CMake** 进行编译。首次配置时必须显式传入 ARM 裸机工具链文件，确保 CMake 在 `project()` 语言检测前就选择 `arm-none-eabi-gcc`，而不是宿主机编译器。CMake 会在配置阶段检查 `FreeRTOS/FreeRTOS/Source/tasks.c`，依赖缺失时会明确提示运行 `./setup.sh` 或通过 `-DFREERTOS_ROOT=/path/to/FreeRTOS` 指定已有 checkout：
 
 ```bash
 # 1. 使用 ARM 裸机工具链文件配置 build 目录

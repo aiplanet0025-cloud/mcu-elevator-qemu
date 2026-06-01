@@ -1,7 +1,7 @@
 # 忽略编译生成的临时文件夹
 build/
 
-# 忽略本地下载的第三方 FreeRTOS 源码（由 setup.sh 自动管理）
+# 忽略本地下载的第三方 FreeRTOS 源码（由 setup.sh 拉取，不提交到仓库）
 FreeRTOS/
 
 # 忽略临时文件
