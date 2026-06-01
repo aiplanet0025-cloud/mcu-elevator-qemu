@@ -122,6 +122,18 @@ void vTaskCLI(void *pvParameters);
 #endif
 INNER_EOF
 
+echo "=== 8a. 写入统一事件类型头文件 src/app/elevator_event.h ==="
+cat << 'INNER_EOF' > src/app/elevator_event.h
+#ifndef ELEVATOR_EVENT_H
+#define ELEVATOR_EVENT_H
+
+typedef struct {
+    int targetFloor;
+} ElevatorEvent;
+
+#endif
+INNER_EOF
+
 echo "=== 9. 写入诊断终端命令行 src/os_tasks/task_cli.c ==="
 cat << 'INNER_EOF' > src/os_tasks/task_cli.c
 #include "task_cli.h"
@@ -131,15 +143,13 @@ cat << 'INNER_EOF' > src/os_tasks/task_cli.c
 #include "task.h"
 #include "queue.h"
 #include "elevator_fsm.h"
+#include "elevator_event.h"
 #include <string.h>
 #include <stdlib.h>
 
 extern QueueHandle_t xFloorQueue;
 extern ElevatorFsm g_elevator_fsm;
 
-typedef struct {
-    int targetFloor;
-} ElevatorEvent;
 
 static void parse_command(char *cmd) {
     if (strcmp(cmd, "help") == 0) {
@@ -337,14 +347,12 @@ cat << 'INNER_EOF' > src/main.c
 #include "logger.h"
 #include "elevator_fsm.h"
 #include "task_cli.h"
+#include "elevator_event.h"
 #include <stdio.h>
 
 QueueHandle_t xFloorQueue = NULL;
 ElevatorFsm g_elevator_fsm;
 
-typedef struct {
-    int targetFloor;
-} ElevatorEvent;
 
 /* ==================================================================== */
 /* 工业级安全加固：在编译期定义所有任务和队列的静态内存缓冲区             */

@@ -4,6 +4,7 @@
 #include "bsp_uart.h"
 #include "logger.h"
 #include "elevator_fsm.h"
+#include "elevator_event.h"
 #include "task_cli.h"
 #include <stdio.h>
 
@@ -13,9 +14,6 @@ QueueHandle_t xFloorQueue = NULL;
 // 2. 将状态机实例提升为全局变量，供 CLI 任务跨任务安全读取
 ElevatorFsm g_elevator_fsm;
 
-typedef struct {
-    int targetFloor;
-} ElevatorEvent;
 
 /* ==================================================================== */
 /* 工业级安全加固：在编译期定义所有任务和队列的静态内存缓冲区             */
