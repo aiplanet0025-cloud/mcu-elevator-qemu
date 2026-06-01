@@ -4,6 +4,7 @@ on:
   push:
     branches: [ main, master ]
   pull_request:
+  workflow_dispatch: # 💥 显式开启手动触发按钮 [2]
 
 jobs:
   build:
