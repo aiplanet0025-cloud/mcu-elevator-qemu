@@ -13,7 +13,7 @@ git submodule update --init --recursive FreeRTOS/Source
 cd ..
 
 echo "=== 2. 创建标准工业级嵌入式工程结构 ==="
-mkdir -p src/bsp src/os_tasks src/app build
+mkdir -p src/bsp src/os_tasks src/app cmake build
 
 echo "=== 3. 复制芯片配置文件和启动文件 ==="
 cp FreeRTOS/FreeRTOS/Demo/CORTEX_LM3S6965_GCC_QEMU/standalone.ld ./
@@ -478,24 +478,43 @@ void * _sbrk(ptrdiff_t incr) {
 }
 INNER_EOF
 
-echo "=== 13. 写入顶层工程配置文件 CMakeLists.txt ==="
-cat << 'INNER_EOF' > CMakeLists.txt
-cmake_minimum_required(VERSION 3.13)
-project(RTOSDemo C ASM)
+echo "=== 13. 写入 ARM 交叉编译工具链配置 cmake/toolchain-arm-none-eabi.cmake ==="
+cat << 'INNER_EOF' > cmake/toolchain-arm-none-eabi.cmake
+# Toolchain file for the QEMU Stellaris LM3S6965 (ARM Cortex-M3) firmware.
+# Pass this file during the first CMake configure step:
+#   cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake
 
 set(CMAKE_SYSTEM_NAME Generic)
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
-set(CMAKE_C_FLAGS "-mcpu=cortex-m3 -mthumb -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -DSTACK_SIZE=2048")
-set(CMAKE_ASM_FLAGS "-mcpu=cortex-m3 -mthumb")
+set(CMAKE_C_COMPILER arm-none-eabi-gcc CACHE FILEPATH "ARM bare-metal C compiler")
+set(CMAKE_ASM_COMPILER arm-none-eabi-gcc CACHE FILEPATH "ARM bare-metal ASM compiler")
 
-set(CMAKE_C_COMPILER arm-none-eabi-gcc)
-set(CMAKE_ASM_COMPILER arm-none-eabi-gcc)
+set(_ARM_CPU_FLAGS "-mcpu=cortex-m3 -mthumb")
+set(CMAKE_C_FLAGS_INIT "${_ARM_CPU_FLAGS} -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -DSTACK_SIZE=2048")
+set(CMAKE_ASM_FLAGS_INIT "${_ARM_CPU_FLAGS}")
 
-set(CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m3 -mthumb -T \${CMAKE_CURRENT_SOURCE_DIR}/standalone.ld --specs=nosys.specs --specs=nano.specs -nostartfiles")
+get_filename_component(_TOOLCHAIN_DIR "${CMAKE_CURRENT_LIST_FILE}" DIRECTORY)
+get_filename_component(_PROJECT_ROOT "${_TOOLCHAIN_DIR}/.." ABSOLUTE)
+set(CMAKE_EXE_LINKER_FLAGS_INIT "${_ARM_CPU_FLAGS} -T ${_PROJECT_ROOT}/standalone.ld --specs=nosys.specs --specs=nano.specs -nostartfiles")
 
-set(FREERTOS_DIR \${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS/FreeRTOS)
-set(FREERTOS_SRC_DIR \${FREERTOS_DIR}/Source)
+unset(_PROJECT_ROOT)
+unset(_TOOLCHAIN_DIR)
+unset(_ARM_CPU_FLAGS)
+INNER_EOF
+
+echo "=== 14. 写入顶层工程配置文件 CMakeLists.txt ==="
+cat << 'INNER_EOF' > CMakeLists.txt
+cmake_minimum_required(VERSION 3.13)
+
+if(NOT CMAKE_TOOLCHAIN_FILE)
+    message(FATAL_ERROR "Please configure with -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake so CMake detects arm-none-eabi-gcc before project().")
+endif()
+
+project(RTOSDemo C ASM)
+
+set(FREERTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS/FreeRTOS)
+set(FREERTOS_SRC_DIR ${FREERTOS_DIR}/Source)
 
 set(PROJECT_SOURCES
     src/main.c
@@ -507,27 +526,27 @@ set(PROJECT_SOURCES
 )
 
 set(FREERTOS_SOURCES
-    \${FREERTOS_SRC_DIR}/tasks.c
-    \${FREERTOS_SRC_DIR}/queue.c
-    \${FREERTOS_SRC_DIR}/list.c
-    \${FREERTOS_SRC_DIR}/timers.c
-    \${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM3/port.c
-    \${FREERTOS_SRC_DIR}/portable/MemMang/heap_4.c
+    ${FREERTOS_SRC_DIR}/tasks.c
+    ${FREERTOS_SRC_DIR}/queue.c
+    ${FREERTOS_SRC_DIR}/list.c
+    ${FREERTOS_SRC_DIR}/timers.c
+    ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM3/port.c
+    ${FREERTOS_SRC_DIR}/portable/MemMang/heap_4.c
 )
 
-add_executable(RTOSDemo \${PROJECT_SOURCES} \${FREERTOS_SOURCES})
+add_executable(RTOSDemo ${PROJECT_SOURCES} ${FREERTOS_SOURCES})
 
 target_include_directories(RTOSDemo PRIVATE
     src
     src/bsp
     src/os_tasks
     src/app
-    \${FREERTOS_SRC_DIR}/include
-    \${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM3
+    ${FREERTOS_SRC_DIR}/include
+    ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM3
 )
 INNER_EOF
 
-echo "=== 14. 链接脚本尾部异常帧规避修复 ==="
+echo "=== 15. 链接脚本尾部异常帧规避修复 ==="
 # 防止重复追加
 if ! grep -q "DISCARD" standalone.ld; then
     echo 'SECTIONS { /DISCARD/ : { *(.eh_frame*) *(.eh_frame_hdr*) } }' >> standalone.ld
@@ -536,6 +555,6 @@ fi
 echo "=== 🎉 一键环境初始化完成！ ==="
 echo "请执行以下命令进行编译和运行："
 echo "  cd build"
-echo "  cmake ../"
+echo "  cmake -S .. -B . -DCMAKE_TOOLCHAIN_FILE=../cmake/toolchain-arm-none-eabi.cmake"
 echo "  make"
 echo "  qemu-system-arm -M lm3s6965evb -kernel RTOSDemo -nographic"

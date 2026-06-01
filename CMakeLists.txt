@@ -1,20 +1,10 @@
 cmake_minimum_required(VERSION 3.13)
+
+if(NOT CMAKE_TOOLCHAIN_FILE)
+    message(FATAL_ERROR "Please configure with -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake so CMake detects arm-none-eabi-gcc before project().")
+endif()
+
 project(RTOSDemo C ASM)
-
-# 强制使用静态库编译测试，绕过裸机编译检测
-set(CMAKE_SYSTEM_NAME Generic)
-set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
-
-# 指定交叉编译器参数（带有扩充主栈的 -DSTACK_SIZE=2048 参数）
-set(CMAKE_C_FLAGS "-mcpu=cortex-m3 -mthumb -fno-exceptions -fno-unwind-tables -fno-asynchronous-unwind-tables -DSTACK_SIZE=2048")
-set(CMAKE_ASM_FLAGS "-mcpu=cortex-m3 -mthumb")
-
-# 指定编译器
-set(CMAKE_C_COMPILER arm-none-eabi-gcc)
-set(CMAKE_ASM_COMPILER arm-none-eabi-gcc)
-
-# 链接器参数
-set(CMAKE_EXE_LINKER_FLAGS "-mcpu=cortex-m3 -mthumb -T ${CMAKE_CURRENT_SOURCE_DIR}/standalone.ld --specs=nosys.specs --specs=nano.specs -nostartfiles")
 
 # 路径定义
 set(FREERTOS_DIR ${CMAKE_CURRENT_SOURCE_DIR}/FreeRTOS/FreeRTOS)

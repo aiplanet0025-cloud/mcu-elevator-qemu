@@ -37,7 +37,9 @@
 
 ```text
 /workspaces/mcu-elevator-qemu
-├── CMakeLists.txt             # 顶层 CMake 配置文件，负责交叉编译与标志配置
+├── CMakeLists.txt             # 顶层 CMake 项目配置文件
+├── cmake/
+│   └── toolchain-arm-none-eabi.cmake  # ARM 裸机交叉编译工具链配置
 ├── standalone.ld              # 针对 QEMU 模拟芯片 (LM3S6965) 的链接脚本
 ├── setup.sh                   # 一键自动化环境部署与代码初始化脚本
 ├── src/
@@ -97,17 +99,14 @@ chmod +x setup.sh
 
 ## ⚙️ 项目编译指南
 
-完成一键初始化后，即可使用 **CMake** 进行编译：
+完成一键初始化后，即可使用 **CMake** 进行编译。首次配置时必须显式传入 ARM 裸机工具链文件，确保 CMake 在 `project()` 语言检测前就选择 `arm-none-eabi-gcc`，而不是宿主机编译器：
 
 ```bash
-# 1. 进入 build 目录（由 setup.sh 自动创建）
-cd build
+# 1. 使用 ARM 裸机工具链文件配置 build 目录
+cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake
 
-# 2. 运行 CMake 重新配置（已配置静态编译检测规避）
-cmake ../
-
-# 3. 编译（将生成最终的 RTOSDemo 固件）
-make
+# 2. 编译（将生成最终的 RTOSDemo 固件）
+cmake --build build
 ```
 
 ---
