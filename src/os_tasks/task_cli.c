@@ -5,15 +5,13 @@
 #include "task.h"
 #include "queue.h"
 #include "elevator_fsm.h"
+#include "elevator_event.h"
 #include <string.h>
 #include <stdlib.h>
 
 extern QueueHandle_t xFloorQueue;
 extern ElevatorFsm g_elevator_fsm; // 声明 main.c 中的全局电梯状态机，用于状态查询
 
-typedef struct {
-    int targetFloor;
-} ElevatorEvent;
 
 // 解析并执行终端输入的指令
 static void parse_command(char *cmd) {
