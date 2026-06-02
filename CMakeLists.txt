@@ -36,7 +36,7 @@ set(FREERTOS_SOURCES
     ${FREERTOS_SRC_DIR}/list.c
     ${FREERTOS_SRC_DIR}/timers.c
     ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM3/port.c
-    ${FREERTOS_SRC_DIR}/portable/MemMang/heap_4.c
+# heap_4.c (dynamic heap) intentionally omitted to enforce static-only allocation
 )
 
 # 生成可执行文件

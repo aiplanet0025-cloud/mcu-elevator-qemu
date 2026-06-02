@@ -18,8 +18,8 @@
 
 ### 2. 100% 静态内存分配 (Safety-Hardened Design)
 在汽车电子、航空航天及生命安全相关的工业嵌入式设备中，动态内存分配（如 `malloc`、动态创建 Task）因其可能产生**内存碎片**并在长期运行中引发突发性死机，是严厉禁止的。
-*   本系统将 **所有的应用任务**（如电梯控制、命令行交互）以及 **所有的进程通信机制**（如消息队列、互斥锁）全部分配为**静态内存分配 (`xTaskCreateStatic` 和 `xQueueCreateStatic`)**。
-*   静态堆栈和控制块在编译阶段即在系统的 `.bss` 段锁定。只要固件编译通过，在物理上就**绝对不会发生“因堆内存耗尽/碎片化而死机”**的系统崩溃事故，确保了系统的高确定性。
+*   在应用代码中，本项目使用静态 API（例如 `xTaskCreateStatic`、`xQueueCreateStatic`、`xSemaphoreCreateMutexStatic`）为任务、队列和互斥等内核对象分配内存，且在仓库的 FreeRTOS 配置中禁用了 FreeRTOS 的动态分配（`configSUPPORT_DYNAMIC_ALLOCATION 0`）。
+*   注意：FreeRTOS 的上游示例目录中含有演示用的动态分配示例（以及未修改的 demo FreeRTOSConfig），这些示例并不影响本项目应用层的静态分配策略。为了工程可证明性和安全性，项目源码（`src/`）使用静态分配，且构建配置中已移除 heap_4.c 以避免引入运行时堆实现。
 
 ### 3. 高度防护的内存边界管理 (MSP / PSP 隔离)
 针对 ARM Cortex-M 的双堆栈指针机制（MSP/PSP）进行了严密的防御性设计：
