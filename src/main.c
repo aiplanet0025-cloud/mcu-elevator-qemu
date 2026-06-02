@@ -5,14 +5,19 @@
 #include "logger.h"
 #include "elevator_fsm.h"
 #include "elevator_event.h"
+#include "dispatcher_event.h"
 #include "task_cli.h"
+#include "task_elevator.h"
+#include "task_dispatcher.h"
 #include <stdio.h>
 
 // 1. 定义多任务通信队列句柄
 QueueHandle_t xFloorQueue = NULL;
+QueueHandle_t xDispatcherQueue = NULL;
 
 // 2. 将状态机实例提升为全局变量，供 CLI 任务跨任务安全读取
-ElevatorFsm g_elevator_fsm;
+ElevatorFsm g_elevator_fsm1;
+ElevatorFsm g_elevator_fsm2;
 
 
 /* ==================================================================== */
@@ -26,53 +31,32 @@ static StackType_t xCLIStack[ CLI_TASK_STACK_SIZE ];
 
 // 2. Elevator 任务的静态内存分配
 #define ELEVATOR_TASK_STACK_SIZE 400
-static StaticTask_t xElevatorTaskBuffer;
-static StackType_t xElevatorStack[ ELEVATOR_TASK_STACK_SIZE ];
+static StaticTask_t xElevator1TaskBuffer;
+static StackType_t xElevator1Stack[ ELEVATOR_TASK_STACK_SIZE ];
+static StaticTask_t xElevator2TaskBuffer;
+static StackType_t xElevator2Stack[ ELEVATOR_TASK_STACK_SIZE ];
 
-// 3. 消息队列的静态内存分配（长度为 10）
+// 3. Dispatcher 任务的静态内存分配
+#define DISPATCHER_TASK_STACK_SIZE 400
+static StaticTask_t xDispatcherTaskBuffer;
+static StackType_t xDispatcherStack[ DISPATCHER_TASK_STACK_SIZE ];
+
+// 4. 消息队列的静态内存分配
 #define QUEUE_LENGTH 10
 #define ITEM_SIZE    sizeof(ElevatorEvent)
 static StaticQueue_t xStaticQueue;
 static uint8_t ucQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
 
+static StaticQueue_t xStaticDispatcherQueue;
+static uint8_t ucDispatcherQueueStorageArea[ QUEUE_LENGTH * sizeof(DispatcherEvent) ];
 
-/* --- 任务：电梯主控制任务（高优先级） --- */
-void vTaskElevator(void *pvParameters) {
-    Elevator_FsmInit(&g_elevator_fsm); // 初始化全局状态机
-    
-    ElevatorEvent xReceivedEvent;
-    char log_buf[128];
-
-    for (;;) {
-        // 如果电梯处于待机状态，则挂起任务，无限期阻塞等待队列事件
-        if (g_elevator_fsm.state == ELEVATOR_STATE_IDLE) {
-            if (xQueueReceive(xFloorQueue, &xReceivedEvent, portMAX_DELAY) == pdTRUE) {
-                Elevator_FsmSetTarget(&g_elevator_fsm, xReceivedEvent.targetFloor);
-            }
-        }
-
-        int tick_time_ms = 1000;
-        if (g_elevator_fsm.state == ELEVATOR_STATE_DOOR_OPEN) {
-            tick_time_ms = 500;
-        }
-
-        // 迭代状态机
-        if (Elevator_FsmTick(&g_elevator_fsm, tick_time_ms, log_buf, sizeof(log_buf))) {
-            if (log_buf[0] != '\0') {
-                Logger_Info(log_buf); 
-            }
-        }
-
-        vTaskDelay(pdMS_TO_TICKS(tick_time_ms));
-    }
-}
 
 /* --- 系统入口 --- */
 int main(void) {
     BSP_UART_Init();
     Logger_Init();
 
-    // 1. 工业安全加固：使用静态 API 创建队列，杜绝运行时内存碎片
+    // 工业安全加固：使用静态 API 创建队列
     xFloorQueue = xQueueCreateStatic(
         QUEUE_LENGTH, 
         ITEM_SIZE, 
@@ -80,7 +64,14 @@ int main(void) {
         &xStaticQueue
     );
 
-    // 2. 工业安全加固：使用静态 API 创建系统应用任务
+    xDispatcherQueue = xQueueCreateStatic(
+        QUEUE_LENGTH, 
+        sizeof(DispatcherEvent), 
+        ucDispatcherQueueStorageArea, 
+        &xStaticDispatcherQueue
+    );
+
+    // CLI 任务
     xTaskCreateStatic(
         vTaskCLI, 
         "CLI", 
@@ -91,14 +82,38 @@ int main(void) {
         &xCLITaskBuffer
     ); 
 
+    // Dispatcher 任务
+    xTaskCreateStatic(
+        vTaskDispatcher, 
+        "Dispatcher", 
+        DISPATCHER_TASK_STACK_SIZE, 
+        NULL, 
+        3, // High priority
+        xDispatcherStack, 
+        &xDispatcherTaskBuffer
+    );
+
+    // 电梯任务
+    g_elevator_fsm1.elevator_id = 1;
     xTaskCreateStatic(
         vTaskElevator, 
-        "Elevator", 
+        "Elevator1", 
         ELEVATOR_TASK_STACK_SIZE, 
-        NULL, 
+        &g_elevator_fsm1, 
         2, 
-        xElevatorStack, 
-        &xElevatorTaskBuffer
+        xElevator1Stack, 
+        &xElevator1TaskBuffer
+    );
+
+    g_elevator_fsm2.elevator_id = 2;
+    xTaskCreateStatic(
+        vTaskElevator, 
+        "Elevator2", 
+        ELEVATOR_TASK_STACK_SIZE, 
+        &g_elevator_fsm2, 
+        2, 
+        xElevator2Stack, 
+        &xElevator2TaskBuffer
     );
 
     // 3. 启动 FreeRTOS 调度器

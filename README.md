@@ -160,22 +160,20 @@ elevator>
 You can enter the following commands in the console for real-time device diagnostics and call interaction:
 
 * **`help`**: Show the supported command menu.
-* **`status`**: Query the elevator's physical state across tasks immediately.
-* **`call <1-3>`**: Call the elevator. For example, enter `call 3` and press Enter. The elevator state machine wakes up and starts simulating physical movement. During this process, you can try entering `status` for concurrent querying:
+* **`status <1-2>`**: Query a specific elevator's physical state across tasks immediately.
+* **`call <1-8>`**: Dispatch request to the most suitable elevator automatically. For example, enter `call 8` and press Enter. The dispatcher will assign this request to the idle elevator closest to the target floor.
 
 ```text
-elevator> call 3
-[FSM] Call Accepted! Target set to 3. Motor: STARTING UP...
+elevator> call 8
+[Dispatcher] Assigning floor 8 to Elevator 1
+[Elevator 1] Call Accepted! Target set to 8. Motor: STARTING UP...
 
-[CLI] Success: Event 'call 3' queued.
-elevator> status
+[CLI] Success: Dispatching request for floor 8.
+elevator> status 1
 
-[Status] Curr Floor: 1 | Target Floor: 3 | Motor State: MOVING UP
-elevator>   >> Elevator arrived at floor 2.
-  >> Elevator arrived at floor 3.
-[FSM] Door: OPENING at floor 3.
-[FSM] Door: CLOSING...
-[FSM] Door: CLOSED. Elevator is now IDLE.
+[Status E1] Curr Floor: 1 | Target Floor: 8 | Motor State: MOVING UP
+elevator>   >> Arrived at floor 2.
+...
 ```
 
 ### 🚪 How to Exit the Simulator

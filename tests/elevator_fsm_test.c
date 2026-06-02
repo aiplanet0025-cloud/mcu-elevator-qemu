@@ -65,7 +65,7 @@ static void expect_fsm(const ElevatorFsm *fsm, int current_floor, int target_flo
 static void test_initial_state_is_idle_on_floor_one(void) {
     ElevatorFsm fsm;
 
-    Elevator_FsmInit(&fsm);
+    Elevator_FsmInit(&fsm, 1);
 
     expect_fsm(&fsm, 1, 1, ELEVATOR_STATE_IDLE, 0U);
 }
@@ -74,7 +74,7 @@ static void test_idle_target_can_be_set_and_same_floor_tick_is_quiet(void) {
     ElevatorFsm fsm;
     char log[LOG_BUFFER_SIZE];
 
-    Elevator_FsmInit(&fsm);
+    Elevator_FsmInit(&fsm, 1);
     Elevator_FsmSetTarget(&fsm, 1);
 
     CHECK_TRUE(!Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
@@ -86,7 +86,7 @@ static void test_full_upward_trip_opens_waits_closes_and_returns_idle(void) {
     ElevatorFsm fsm;
     char log[LOG_BUFFER_SIZE];
 
-    Elevator_FsmInit(&fsm);
+    Elevator_FsmInit(&fsm, 1);
     Elevator_FsmSetTarget(&fsm, 3);
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
@@ -96,15 +96,15 @@ static void test_full_upward_trip_opens_waits_closes_and_returns_idle(void) {
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
     expect_fsm(&fsm, 2, 3, ELEVATOR_STATE_MOVING_UP, 0U);
-    CHECK_STR_EQ("[FSM] >> Elevator arrived at floor 2.\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] >> Arrived at floor 2.\r\n", log);
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
     expect_fsm(&fsm, 3, 3, ELEVATOR_STATE_DOOR_OPENING, 0U);
-    CHECK_STR_EQ("[FSM] >> Elevator arrived at floor 3.\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] >> Arrived at floor 3.\r\n", log);
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
     expect_fsm(&fsm, 3, 3, ELEVATOR_STATE_DOOR_OPEN, 0U);
-    CHECK_STR_EQ("[FSM] Door: OPENING at floor 3.\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] Door: OPENING at floor 3.\r\n", log);
 
     CHECK_TRUE(!Elevator_FsmTick(&fsm, 1999, log, sizeof(log)));
     expect_fsm(&fsm, 3, 3, ELEVATOR_STATE_DOOR_OPEN, 1999U);
@@ -112,18 +112,18 @@ static void test_full_upward_trip_opens_waits_closes_and_returns_idle(void) {
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 1, log, sizeof(log)));
     expect_fsm(&fsm, 3, 3, ELEVATOR_STATE_DOOR_CLOSING, 2000U);
-    CHECK_STR_EQ("[FSM] Door: CLOSING...\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] Door: CLOSING...\r\n", log);
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
     expect_fsm(&fsm, 3, 3, ELEVATOR_STATE_IDLE, 2000U);
-    CHECK_STR_EQ("[FSM] Door: CLOSED. Elevator is now IDLE.\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] Door: CLOSED. Elevator is now IDLE.\r\n", log);
 }
 
 static void test_downward_trip_reaches_target_before_opening_door(void) {
     ElevatorFsm fsm;
     char log[LOG_BUFFER_SIZE];
 
-    Elevator_FsmInit(&fsm);
+    Elevator_FsmInit(&fsm, 1);
     fsm.current_floor = 3;
     fsm.target_floor = 1;
 
@@ -134,18 +134,18 @@ static void test_downward_trip_reaches_target_before_opening_door(void) {
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
     expect_fsm(&fsm, 2, 1, ELEVATOR_STATE_MOVING_DOWN, 0U);
-    CHECK_STR_EQ("[FSM] >> Elevator arrived at floor 2.\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] >> Arrived at floor 2.\r\n", log);
 
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
     expect_fsm(&fsm, 1, 1, ELEVATOR_STATE_DOOR_OPENING, 0U);
-    CHECK_STR_EQ("[FSM] >> Elevator arrived at floor 1.\r\n", log);
+    CHECK_STR_EQ("[Elevator 1] >> Arrived at floor 1.\r\n", log);
 }
 
 static void test_target_update_is_ignored_while_not_idle(void) {
     ElevatorFsm fsm;
     char log[LOG_BUFFER_SIZE];
 
-    Elevator_FsmInit(&fsm);
+    Elevator_FsmInit(&fsm, 1);
     Elevator_FsmSetTarget(&fsm, 3);
     CHECK_TRUE(Elevator_FsmTick(&fsm, 100, log, sizeof(log)));
 

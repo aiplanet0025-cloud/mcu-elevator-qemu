@@ -49,6 +49,8 @@ set(PROJECT_SOURCES
     src/bsp/startup.c
     src/os_tasks/logger.c
     src/os_tasks/task_cli.c
+    src/os_tasks/task_elevator.c
+    src/os_tasks/task_dispatcher.c
     src/app/elevator_fsm.c
 )
 

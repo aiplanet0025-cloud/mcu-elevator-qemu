@@ -6,24 +6,29 @@
 #include "queue.h"
 #include "elevator_fsm.h"
 #include "elevator_event.h"
+#include "dispatcher_event.h"
 #include <string.h>
 #include <stdlib.h>
+#include <stdio.h>
 
-extern QueueHandle_t xFloorQueue;
-extern ElevatorFsm g_elevator_fsm; // 声明 main.c 中的全局电梯状态机，用于状态查询
-
+extern QueueHandle_t xDispatcherQueue;
+extern ElevatorFsm g_elevator_fsm1; // Update for multiple
+extern ElevatorFsm g_elevator_fsm2;
 
 // 解析并执行终端输入的指令
 static void parse_command(char *cmd) {
     if (strcmp(cmd, "help") == 0) {
         Logger_Info("\r\n--- Diagnostics Commands ---\r\n");
-        Logger_Info("  help       - Show this help menu\r\n");
-        Logger_Info("  status     - Show elevator current metrics\r\n");
-        Logger_Info("  call <1-3> - Call elevator to a specific floor\r\n");
+        Logger_Info("  help                  - Show this help menu\r\n");
+        Logger_Info("  status <1-2>          - Show elevator current metrics\r\n");
+        Logger_Info("  call <1-8>            - Dispatch request to available elevator\r\n");
     } 
-    else if (strcmp(cmd, "status") == 0) {
+    else if (strncmp(cmd, "status ", 7) == 0) {
+        int id = atoi(&cmd[7]);
+        ElevatorFsm *fsm = (id == 2) ? &g_elevator_fsm2 : &g_elevator_fsm1;
+        
         const char *state_str = "UNKNOWN";
-        switch (g_elevator_fsm.state) {
+        switch (fsm->state) {
             case ELEVATOR_STATE_IDLE:          state_str = "IDLE"; break;
             case ELEVATOR_STATE_MOVING_UP:     state_str = "MOVING UP"; break;
             case ELEVATOR_STATE_MOVING_DOWN:   state_str = "MOVING DOWN"; break;
@@ -31,17 +36,17 @@ static void parse_command(char *cmd) {
             case ELEVATOR_STATE_DOOR_OPEN:     state_str = "DOOR OPEN"; break;
             case ELEVATOR_STATE_DOOR_CLOSING:  state_str = "DOOR CLOSING"; break;
         }
-        Logger_Info("\r\n[Status] Curr Floor: %d | Target Floor: %d | Motor State: %s\r\n", 
-                    g_elevator_fsm.current_floor, g_elevator_fsm.target_floor, state_str);
+        Logger_Info("\r\n[Status E%d] Curr Floor: %d | Target Floor: %d | Motor State: %s\r\n", 
+                    fsm->elevator_id, fsm->current_floor, fsm->target_floor, state_str);
     } 
     else if (strncmp(cmd, "call ", 5) == 0) {
         int floor = atoi(&cmd[5]);
-        if (floor >= 1 && floor <= 3) {
-            ElevatorEvent xEvent = { floor };
-            xQueueSend(xFloorQueue, &xEvent, 0);
-            Logger_Info("\r\n[CLI] Success: Event 'call %d' queued.\r\n", floor);
+        if (floor >= 1 && floor <= MAX_FLOORS) {
+            DispatcherEvent xEvent = { floor };
+            xQueueSend(xDispatcherQueue, &xEvent, 0);
+            Logger_Info("\r\n[CLI] Success: Dispatching request for floor %d.\r\n", floor);
         } else {
-            Logger_Info("\r\n[CLI] Error: Invalid floor %d (Valid: 1 to 3).\r\n", floor);
+            Logger_Info("\r\n[CLI] Error: Invalid floor %d (Valid: 1-%d).\r\n", floor, MAX_FLOORS);
         }
     } 
     else {
