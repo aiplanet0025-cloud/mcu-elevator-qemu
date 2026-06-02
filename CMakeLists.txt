@@ -34,9 +34,7 @@ set(FREERTOS_SOURCES
     ${FREERTOS_SRC_DIR}/tasks.c
     ${FREERTOS_SRC_DIR}/queue.c
     ${FREERTOS_SRC_DIR}/list.c
-    ${FREERTOS_SRC_DIR}/timers.c
     ${FREERTOS_SRC_DIR}/portable/GCC/ARM_CM3/port.c
-    ${FREERTOS_SRC_DIR}/portable/MemMang/heap_4.c
 )
 
 # 生成可执行文件

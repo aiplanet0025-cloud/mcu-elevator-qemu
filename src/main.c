@@ -6,6 +6,8 @@
 #include "elevator_fsm.h"
 #include "elevator_event.h"
 #include "task_cli.h"
+#include <errno.h>
+#include <stddef.h>
 #include <stdio.h>
 
 // 1. 定义多任务通信队列句柄
@@ -140,16 +142,8 @@ void Timer0IntHandler(void) {}
 void vT2InterruptHandler(void) {}
 void vT3InterruptHandler(void) {}
 
-#include <stddef.h>
 void * _sbrk(ptrdiff_t incr) {
-    extern int _ebss; 
-    static unsigned char *heap_end = NULL;
-    unsigned char *prev_heap_end;
-
-    if (heap_end == NULL) {
-        heap_end = (unsigned char *)&_ebss;
-    }
-    prev_heap_end = heap_end;
-    heap_end += incr;
-    return (void *)prev_heap_end;
+    (void)incr;
+    errno = ENOMEM;
+    return (void *)-1;
 }

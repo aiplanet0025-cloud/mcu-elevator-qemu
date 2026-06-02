@@ -45,7 +45,6 @@
 #define configCPU_CLOCK_HZ				( ( unsigned long ) 50000000 )
 #define configTICK_RATE_HZ				( ( TickType_t ) 1000 )
 #define configMINIMAL_STACK_SIZE		( ( unsigned short ) 90 )
-#define configTOTAL_HEAP_SIZE			( ( size_t ) ( 50 * 1024 ) )
 #define configMAX_TASK_NAME_LEN			( 12 )
 #define configUSE_TRACE_FACILITY		1
 #define configUSE_16_BIT_TICKS			0
@@ -61,9 +60,11 @@
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 #define configQUEUE_REGISTRY_SIZE		10
 #define configSUPPORT_STATIC_ALLOCATION	1
+#define configSUPPORT_DYNAMIC_ALLOCATION	0
 
-/* Timer related defines. */
-#define configUSE_TIMERS				1
+/* Timer service is disabled because this demo does not use software timers;
+ * keeping it off avoids creating a timer command queue. */
+#define configUSE_TIMERS				0
 #define configTIMER_TASK_PRIORITY		2
 #define configTIMER_QUEUE_LENGTH		20
 #define configTIMER_TASK_STACK_DEPTH	( configMINIMAL_STACK_SIZE )
@@ -80,11 +81,11 @@ to exclude the API function. */
 #define INCLUDE_vTaskDelay						1
 #define INCLUDE_uxTaskGetStackHighWaterMark		1
 #define INCLUDE_xTaskGetSchedulerState			1
-#define INCLUDE_xTimerGetTimerDaemonTaskHandle	1
+#define INCLUDE_xTimerGetTimerDaemonTaskHandle	0
 #define INCLUDE_xTaskGetIdleTaskHandle			1
 #define INCLUDE_xSemaphoreGetMutexHolder		1
 #define INCLUDE_eTaskGetState					1
-#define INCLUDE_xTimerPendFunctionCall			1
+#define INCLUDE_xTimerPendFunctionCall			0
 
 /* This demo makes use of one or more example stats formatting functions.  These
 format the raw data provided by the uxTaskGetSystemState() function in to human

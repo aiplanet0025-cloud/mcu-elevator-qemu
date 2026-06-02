@@ -5,11 +5,12 @@
 #include <stdio.h>
 #include <stdarg.h>
 
+static StaticSemaphore_t xLogMutexBuffer;
 static SemaphoreHandle_t xLogMutex = NULL;
 
 void Logger_Init(void) {
-    // 创建一个互斥锁用于保护串口输出
-    xLogMutex = xSemaphoreCreateMutex();
+    // 使用静态控制块创建互斥锁，避免 FreeRTOS heap 分配
+    xLogMutex = xSemaphoreCreateMutexStatic(&xLogMutexBuffer);
 }
 
 void Logger_Info(const char *format, ...) {
