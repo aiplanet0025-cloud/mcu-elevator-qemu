@@ -61,6 +61,7 @@
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 #define configQUEUE_REGISTRY_SIZE		10
 #define configSUPPORT_STATIC_ALLOCATION	1
+#define configSUPPORT_DYNAMIC_ALLOCATION	0
 
 /* Timer related defines. */
 #define configUSE_TIMERS				1
@@ -86,11 +87,11 @@ to exclude the API function. */
 #define INCLUDE_eTaskGetState					1
 #define INCLUDE_xTimerPendFunctionCall			1
 
-/* This demo makes use of one or more example stats formatting functions.  These
-format the raw data provided by the uxTaskGetSystemState() function in to human
-readable ASCII form.  See the notes in the implementation of vTaskList() within
-FreeRTOS/Source/tasks.c for limitations. */
-#define configUSE_STATS_FORMATTING_FUNCTIONS	1
+/* Keep the optional stats formatting helpers disabled.  The vTaskList() and
+vTaskGetRunTimeStats() formatting helpers allocate their task snapshot buffers
+dynamically in FreeRTOS tasks.c, which conflicts with this static-allocation-only
+firmware profile. */
+#define configUSE_STATS_FORMATTING_FUNCTIONS	0
 
 #define configKERNEL_INTERRUPT_PRIORITY 		( 255 )	/* All eight bits as QEMU doesn't model the priority bits. */
 /* !!!! configMAX_SYSCALL_INTERRUPT_PRIORITY must not be set to zero !!!!
