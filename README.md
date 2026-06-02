@@ -108,7 +108,7 @@ chmod +x setup.sh
 
 ## ⚙️ Build Guide
 
-After dependency initialization, the project can be built with **CMake**. During the first configuration, you must explicitly pass the ARM bare-metal toolchain file. This ensures CMake selects `arm-none-eabi-gcc` before the `project()` language checks, instead of using the host compiler. During configuration, CMake checks for `FreeRTOS/FreeRTOS/Source/tasks.c`; if the dependency is missing, it clearly prompts you to run `./setup.sh` or pass an existing checkout through `-DFREERTOS_ROOT=/path/to/FreeRTOS`:
+After dependency initialization, the firmware can be built with **CMake**. During the first firmware configuration, you must explicitly pass the ARM bare-metal toolchain file. This ensures CMake selects `arm-none-eabi-gcc` before the `project()` language checks, instead of using the host compiler. During configuration, CMake checks for `FreeRTOS/FreeRTOS/Source/tasks.c`; if the dependency is missing, it clearly prompts you to run `./setup.sh` or pass an existing checkout through `-DFREERTOS_ROOT=/path/to/FreeRTOS`:
 
 ```bash
 # 1. Configure the build directory with the ARM bare-metal toolchain file
@@ -117,6 +117,23 @@ cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake
 # 2. Build the firmware (produces the final RTOSDemo firmware image)
 cmake --build build
 ```
+
+## 🧪 Host Unit Tests
+
+The elevator state machine in `src/app/elevator_fsm.c` is pure C and does not depend on hardware registers or FreeRTOS APIs. You can therefore build and run its unit tests on a normal host computer without the ARM toolchain or the FreeRTOS checkout:
+
+```bash
+# 1. Configure a host-test build directory with the native compiler
+cmake -S . -B build-host-tests -DBUILD_HOST_TESTS=ON
+
+# 2. Build the unit-test executable
+cmake --build build-host-tests
+
+# 3. Run the tests through CTest
+ctest --test-dir build-host-tests --output-on-failure
+```
+
+The host-test workflow builds `elevator_fsm.c` as a small static library and links it into `tests/elevator_fsm_test.c`. The tests cover initialization, idle behavior, upward and downward travel, door-open timing, return to idle, and rejection of target changes while the state machine is busy.
 
 ---
 
