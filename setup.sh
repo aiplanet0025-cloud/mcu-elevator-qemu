@@ -3,12 +3,14 @@ set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 FREERTOS_DIR="${ROOT_DIR}/FreeRTOS"
-FREERTOS_REPO="https://github.com/FreeRTOS/FreeRTOS.git"
+FREERTOS_REPO="${FREERTOS_REPO:-https://github.com/FreeRTOS/FreeRTOS.git}"
+FREERTOS_REF="${FREERTOS_REF:-}"
 FORCE=0
+CHECK_ONLY=0
 
 usage() {
     cat <<USAGE
-Usage: ./setup.sh [--force]
+Usage: ./setup.sh [--force] [--check-only]
 
 Prepare local build dependencies for this project.
 
@@ -16,6 +18,10 @@ This script only downloads/updates the external FreeRTOS dependency. It does not
 rewrite files under src/, cmake/, or the project root. If a non-empty local
 FreeRTOS/ directory is present but is not a git checkout, the script asks before
 removing it; pass --force to overwrite without prompting.
+
+Environment overrides:
+  FREERTOS_REPO  Git URL used when cloning FreeRTOS (default: ${FREERTOS_REPO})
+  FREERTOS_REF   Optional branch, tag, or commit checked out after cloning/updating
 USAGE
 }
 
@@ -23,6 +29,9 @@ for arg in "$@"; do
     case "${arg}" in
         --force)
             FORCE=1
+            ;;
+        --check-only)
+            CHECK_ONLY=1
             ;;
         -h|--help)
             usage
@@ -78,6 +87,34 @@ confirm_overwrite() {
     esac
 }
 
+checkout_freertos_ref() {
+    if [ -n "${FREERTOS_REF}" ]; then
+        echo "Checking out FreeRTOS ref '${FREERTOS_REF}' ..."
+        git -C "${FREERTOS_DIR}" fetch --depth 1 origin "${FREERTOS_REF}"
+        git -C "${FREERTOS_DIR}" checkout --detach FETCH_HEAD
+    fi
+}
+
+clone_freertos() {
+    echo "Cloning ${FREERTOS_REPO} into FreeRTOS/ ..."
+    git clone --depth 1 --filter=blob:none "${FREERTOS_REPO}" "${FREERTOS_DIR}"
+    checkout_freertos_ref
+}
+
+update_freertos_source() {
+    echo "Initializing FreeRTOS kernel source submodule ..."
+    git -C "${FREERTOS_DIR}" submodule update --init --recursive --depth 1 FreeRTOS/Source
+}
+
+validate_freertos_source() {
+    if [ ! -f "${FREERTOS_DIR}/FreeRTOS/Source/tasks.c" ]; then
+        echo "ERROR: FreeRTOS kernel source was not found at:" >&2
+        echo "  ${FREERTOS_DIR}/FreeRTOS/Source/tasks.c" >&2
+        echo "Try removing FreeRTOS/ and running ./setup.sh again, or set FREERTOS_REPO/FREERTOS_REF to a valid checkout." >&2
+        exit 1
+    fi
+}
+
 echo "=== Checking host tools ==="
 require_tool git
 warn_if_missing cmake
@@ -85,34 +122,35 @@ warn_if_missing make
 warn_if_missing arm-none-eabi-gcc
 warn_if_missing qemu-system-arm
 
+if [ "${CHECK_ONLY}" -eq 1 ]; then
+    echo "Tool check complete (--check-only); no dependencies were downloaded or modified."
+    exit 0
+fi
+
 echo "=== Preparing FreeRTOS dependency ==="
 cd "${ROOT_DIR}"
 
 if [ ! -e "${FREERTOS_DIR}" ]; then
-    echo "FreeRTOS/ not found; cloning ${FREERTOS_REPO} ..."
-    git clone --depth 1 --recurse-submodules --shallow-submodules "${FREERTOS_REPO}" "${FREERTOS_DIR}"
+    clone_freertos
 elif [ -d "${FREERTOS_DIR}/.git" ]; then
     echo "FreeRTOS/ is an existing git checkout; updating with fast-forward only ..."
-    git -C "${FREERTOS_DIR}" pull --ff-only
-    git -C "${FREERTOS_DIR}" submodule update --init --recursive --depth 1 FreeRTOS/Source
+    if [ -n "${FREERTOS_REF}" ]; then
+        checkout_freertos_ref
+    else
+        git -C "${FREERTOS_DIR}" pull --ff-only
+    fi
 elif [ -d "${FREERTOS_DIR}" ] && [ -z "$(find "${FREERTOS_DIR}" -mindepth 1 -maxdepth 1 -print -quit)" ]; then
     echo "FreeRTOS/ exists but is empty; replacing it with a fresh clone ..."
     rmdir "${FREERTOS_DIR}"
-    git clone --depth 1 --recurse-submodules --shallow-submodules "${FREERTOS_REPO}" "${FREERTOS_DIR}"
+    clone_freertos
 else
     confirm_overwrite "${FREERTOS_DIR}"
     rm -rf "${FREERTOS_DIR}"
-    git clone --depth 1 --recurse-submodules --shallow-submodules "${FREERTOS_REPO}" "${FREERTOS_DIR}"
+    clone_freertos
 fi
 
-git -C "${FREERTOS_DIR}" submodule update --init --recursive --depth 1 FreeRTOS/Source
-
-if [ ! -f "${FREERTOS_DIR}/FreeRTOS/Source/tasks.c" ]; then
-    echo "ERROR: FreeRTOS kernel source was not found at:" >&2
-    echo "  ${FREERTOS_DIR}/FreeRTOS/Source/tasks.c" >&2
-    echo "Try removing FreeRTOS/ and running ./setup.sh again." >&2
-    exit 1
-fi
+update_freertos_source
+validate_freertos_source
 
 cat <<DONE
 

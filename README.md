@@ -75,7 +75,7 @@ sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch qemu-system-arm cmake ma
 
 ## 🚀 依赖初始化 (Dependency Setup)
 
-`setup.sh` 只负责本地环境检查和外部依赖拉取：它会下载或更新官方 FreeRTOS 仓库，并初始化 `FreeRTOS/Source` 子模块。脚本不会重写 `src/`、`cmake/`、`CMakeLists.txt` 或其它业务源码，避免开发者本地改动被初始化流程覆盖。
+`setup.sh` 只负责本地环境检查和外部依赖拉取：它会下载或更新官方 FreeRTOS 仓库，并初始化 `FreeRTOS/Source` 子模块。脚本不会重写 `src/`、`cmake/`、`CMakeLists.txt` 或其它业务源码，避免开发者本地改动被初始化流程覆盖。脚本同时支持 `FREERTOS_REPO` 和 `FREERTOS_REF` 环境变量，便于 CI 或离线镜像固定依赖来源与版本。
 
 在项目根目录下直接运行：
 
@@ -92,7 +92,8 @@ chmod +x setup.sh
 2. **依赖检索**：如果 `FreeRTOS/` 不存在，则克隆官方 FreeRTOS 仓库并拉取子模块。
 3. **安全更新**：如果 `FreeRTOS/` 已经是 git checkout，则执行 fast-forward 更新和子模块初始化。
 4. **覆盖保护**：如果 `FreeRTOS/` 是非空、非 git 目录，脚本会先询问是否覆盖；在 CI 等非交互环境中会拒绝覆盖，除非显式传入 `./setup.sh --force`。
-5. **依赖校验**：确认 `FreeRTOS/FreeRTOS/Source/tasks.c` 存在，否则给出明确错误并终止。
+5. **接口自检**：`./setup.sh --check-only` 仅检查脚本参数与宿主工具提示，不下载或修改依赖，适合 CI 先验证脚本入口。
+6. **依赖校验**：确认 `FreeRTOS/FreeRTOS/Source/tasks.c` 存在，否则给出明确错误并终止。
 
 ---
 

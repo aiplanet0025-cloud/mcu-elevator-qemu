@@ -6,10 +6,11 @@
 #include <stdarg.h>
 
 static SemaphoreHandle_t xLogMutex = NULL;
+static StaticSemaphore_t xLogMutexBuffer;
 
 void Logger_Init(void) {
-    // 创建一个互斥锁用于保护串口输出
-    xLogMutex = xSemaphoreCreateMutex();
+    // 使用静态互斥锁保护串口输出，避免运行时动态内存分配。
+    xLogMutex = xSemaphoreCreateMutexStatic(&xLogMutexBuffer);
 }
 
 void Logger_Info(const char *format, ...) {
