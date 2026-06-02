@@ -1,127 +1,137 @@
 ***
 
-# Elevator OS - 基于 FreeRTOS & QEMU 的工业级电梯控制模拟系统
+# Elevator OS - An Industrial-Grade Elevator Control Simulation System Based on FreeRTOS & QEMU
 
-`Elevator OS` 是一个运行在 ARM Cortex-M3 (模拟芯片：Stellaris LM3S6965) 平台上的、高可靠性工业级电梯控制模拟系统。项目利用 **QEMU 虚拟机** 在云端 (GitHub Codespaces) 构建起完整的软硬件仿真环境。
+`Elevator OS` is a high-reliability, industrial-grade elevator control simulation system that runs on an ARM Cortex-M3 platform (simulated chip: Stellaris LM3S6965). The project uses the **QEMU virtual machine** to build a complete software/hardware simulation environment in the cloud, such as GitHub Codespaces.
 
-本项目**拒绝**传统的面向过程“面条式”裸机代码开发，而是严格遵循现代嵌入式软件工程规范，在系统高内聚、低耦合、线程安全、内存安全及高确定性等方面进行了深度工程化实践，达到满足工业安全标准（如 IEC 61508 / MISRA-C）的原型设计高度。
-
----
-
-## 🌟 核心技术亮点与工程设计优势
-
-### 1. 严格的三层解耦架构 (Layered Software Architecture)
-系统在软件设计上实现了严格的分层，任何一层的变动都不会影响到其他层，具备极佳的平台移植性：
-*   **BSP / HAL 层 (板级支持与硬件抽象)**：封装寄存器级操作（如 `bsp_uart.c`），向上仅暴露标准的、平台无关的底层接口。
-*   **OS 任务与同步层 (OS & Sync Layer)**：利用 **FreeRTOS Queue (消息队列)** 实现多任务异步非阻塞通信；利用 **Mutex (互斥锁)** 构建了线程安全的调试日志机制。
-*   **APP 业务逻辑层 (Business Logic)**：电梯的核心状态机 (`elevator_fsm.c`) 为 **100% 纯 C 语言编写**，不依赖 FreeRTOS 的任何 API，也不包含任何硬件寄存器头文件。这使得该业务逻辑可以直接在 PC 端运行 Google Test 等框架实施高覆盖率的单元测试。
-
-### 2. 100% 静态内存分配 (Safety-Hardened Design)
-在汽车电子、航空航天及生命安全相关的工业嵌入式设备中，动态内存分配（如 `malloc`、动态创建 Task）因其可能产生**内存碎片**并在长期运行中引发突发性死机，是严厉禁止的。
-*   在应用代码中，本项目使用静态 API（例如 `xTaskCreateStatic`、`xQueueCreateStatic`、`xSemaphoreCreateMutexStatic`）为任务、队列和互斥等内核对象分配内存，且在仓库的 FreeRTOS 配置中禁用了 FreeRTOS 的动态分配（`configSUPPORT_DYNAMIC_ALLOCATION 0`）。
-*   注意：FreeRTOS 的上游示例目录中含有演示用的动态分配示例（以及未修改的 demo FreeRTOSConfig），这些示例并不影响本项目应用层的静态分配策略。为了工程可证明性和安全性，项目源码（`src/`）使用静态分配，且构建配置中已移除 heap_4.c 以避免引入运行时堆实现。
-
-### 3. 高度防护的内存边界管理 (MSP / PSP 隔离)
-针对 ARM Cortex-M 的双堆栈指针机制（MSP/PSP）进行了严密的防御性设计：
-*   **系统启动期 (MSP)**：重构了底层的栈大小参数（`-DSTACK_SIZE=2048`），彻底解决了在 `main()` 函数中由于标准 C 库 `vsnprintf` 深度压栈导致的启动期主栈溢出问题。
-*   **任务运行期 (PSP)**：通过对 `vsnprintf` 最大栈开销的科学定量测算，将各静态任务的局部栈分配限制在 `400` 字 (1600 字节)，在仅有 64 KB SRAM 的严苛芯片空间限制下，实现了安全性与空间利用率的最佳平衡。
-
-### 4. 线程安全的实时诊断终端 (Interactive CLI Console)
-设计并实现了一个类似 Linux 终端的异步交互式命令行：
-*   **字符回显 (Echo) 与删除支持**：支持字符输入回显及 VT100 退格转义（Backspace）物理擦除。
-*   **非阻塞指令解析**：通过非阻塞 UART 读取配合 FreeRTOS 队列，用户输入 `status` 即可异步查询正在运行中的电梯状态（如位置、方向、电机状态），完美展现了实时操作系统的并发多任务设计优势。
+This project **rejects** traditional procedural, "spaghetti-style" bare-metal development. Instead, it strictly follows modern embedded software engineering practices and applies deep engineering discipline around high cohesion, low coupling, thread safety, memory safety, and high determinism. The result is a prototype designed toward the expectations of industrial safety standards such as IEC 61508 and MISRA-C.
 
 ---
 
-## 📁 项目目录结构
+## 🌟 Core Technical Highlights and Engineering Advantages
+
+### 1. Strict Three-Layer Decoupled Architecture (Layered Software Architecture)
+
+The system implements strict software layering. Changes in any one layer do not affect the others, which provides excellent platform portability:
+
+* **BSP / HAL Layer (Board Support and Hardware Abstraction)**: Encapsulates register-level operations, such as `bsp_uart.c`, and exposes only standard, platform-independent low-level interfaces upward.
+* **OS Task and Synchronization Layer (OS & Sync Layer)**: Uses **FreeRTOS Queue** objects for asynchronous, non-blocking communication between tasks, and uses **Mutex** objects to build a thread-safe debug logging mechanism.
+* **APP Business Logic Layer (Business Logic)**: The elevator core state machine (`elevator_fsm.c`) is written in **100% pure C**, without any dependency on FreeRTOS APIs and without any hardware register header files. This allows the business logic to run directly on a PC with frameworks such as Google Test for high-coverage unit testing.
+
+### 2. 100% Static Memory Allocation (Safety-Hardened Design)
+
+In automotive electronics, aerospace, and life-safety-related industrial embedded devices, dynamic memory allocation, such as `malloc` or dynamically created tasks, is strictly prohibited because it can cause **memory fragmentation** and unexpected crashes during long-term operation.
+
+* In the application code, this project uses static APIs, such as `xTaskCreateStatic`, `xQueueCreateStatic`, and `xSemaphoreCreateMutexStatic`, to allocate memory for kernel objects including tasks, queues, and mutexes. The repository's FreeRTOS configuration disables FreeRTOS dynamic allocation with `configSUPPORT_DYNAMIC_ALLOCATION 0`.
+* Note: The upstream FreeRTOS example directories include demo dynamic-allocation examples, along with unmodified demo `FreeRTOSConfig` files. These examples do not affect this project's application-level static allocation policy. For engineering provability and safety, the project source code (`src/`) uses static allocation, and the build configuration removes `heap_4.c` to avoid introducing a runtime heap implementation.
+
+### 3. Hardened Memory Boundary Management (MSP / PSP Isolation)
+
+The project uses defensive design around the dual stack pointer mechanism of ARM Cortex-M, namely MSP and PSP:
+
+* **System Startup Phase (MSP)**: The low-level stack size parameter was refactored with `-DSTACK_SIZE=2048`, fully resolving the startup main-stack overflow caused by deep standard C library `vsnprintf` stack usage in `main()`.
+* **Task Runtime Phase (PSP)**: By scientifically quantifying the maximum stack cost of `vsnprintf`, each static task's local stack allocation is capped at `400` words (1600 bytes). This achieves an effective balance between safety and space efficiency under the strict 64 KB SRAM limit of the target chip.
+
+### 4. Thread-Safe Real-Time Diagnostics Terminal (Interactive CLI Console)
+
+The project designs and implements an asynchronous interactive command line similar to a Linux terminal:
+
+* **Character Echo and Delete Support**: Supports typed-character echo and physical erasure through VT100 backspace escape handling.
+* **Non-Blocking Command Parsing**: Through non-blocking UART reads combined with FreeRTOS queues, users can enter `status` to asynchronously query the running elevator state, such as position, direction, and motor state. This clearly demonstrates the concurrent multitasking advantages of a real-time operating system.
+
+---
+
+## 📁 Project Directory Structure
 
 ```text
 /workspaces/mcu-elevator-qemu
-├── CMakeLists.txt             # 顶层 CMake 项目配置文件
+├── CMakeLists.txt             # Top-level CMake project configuration file
 ├── cmake/
-│   └── toolchain-arm-none-eabi.cmake  # ARM 裸机交叉编译工具链配置
-├── standalone.ld              # 针对 QEMU 模拟芯片 (LM3S6965) 的链接脚本
-├── setup.sh                   # 依赖拉取与本地环境检查脚本（不会重写业务源码）
+│   └── toolchain-arm-none-eabi.cmake  # ARM bare-metal cross-compilation toolchain configuration
+├── standalone.ld              # Linker script for the QEMU-simulated chip (LM3S6965)
+├── setup.sh                   # Dependency fetching and local environment check script (does not rewrite business source code)
 ├── src/
-│   ├── main.c                 # 系统入口，初始化硬件、静态 OS 资源并开启调度器
-│   ├── FreeRTOSConfig.h       # FreeRTOS 配置文件，开启互斥锁、静态分配及断言重定向
-│   ├── bsp/                   # 底层驱动层
-│   │   ├── startup.c          # 芯片启动汇编转 C 的文件，定义向量表与 ResetISR
-│   │   ├── bsp_uart.h         # 串口抽象头文件
-│   │   └── bsp_uart.c         # 串口寄存器驱动
-│   ├── app/                   # 纯 C 业务逻辑层
-│   │   ├── elevator_fsm.h     # 电梯状态机头文件
-│   │   └── elevator_fsm.c     # 状态转移逻辑
-│   └── os_tasks/              # 系统任务与互斥保护层
-│       ├── logger.h           # 线程安全日志头文件
-│       ├── logger.c           # 互斥锁保护的日志输出
-│       ├── task_cli.h         # CLI 交互任务头文件
-│       └── task_cli.c         # 诊断控制台字符流解析
+│   ├── main.c                 # System entry point: initializes hardware, static OS resources, and starts the scheduler
+│   ├── FreeRTOSConfig.h       # FreeRTOS configuration: enables mutexes, static allocation, and assertion redirection
+│   ├── bsp/                   # Low-level driver layer
+│   │   ├── startup.c          # Chip startup file converted from assembly to C; defines the vector table and ResetISR
+│   │   ├── bsp_uart.h         # UART abstraction header
+│   │   └── bsp_uart.c         # UART register driver
+│   ├── app/                   # Pure-C business logic layer
+│   │   ├── elevator_fsm.h     # Elevator state machine header
+│   │   └── elevator_fsm.c     # State transition logic
+│   └── os_tasks/              # System tasks and mutex protection layer
+│       ├── logger.h           # Thread-safe logger header
+│       ├── logger.c           # Mutex-protected log output
+│       ├── task_cli.h         # CLI interaction task header
+│       └── task_cli.c         # Diagnostic console character-stream parser
 ```
 
 ---
 
-## 🛠️ 运行环境搭建 (Prerequisites)
+## 🛠️ Prerequisites
 
-本项目在基于 Ubuntu/Debian 的 Linux 容器（如 GitHub Codespaces）中运行，所需工具链如下：
+This project runs in Ubuntu/Debian-based Linux containers, such as GitHub Codespaces. The required toolchain is listed below:
 
 ```bash
-# 更新源并安装 ARM 交叉编译器、QEMU 系统仿真器和构建工具
+# Update package indexes and install the ARM cross-compiler, QEMU system emulator, and build tools
 sudo apt-get update
 sudo apt-get install -y gcc-arm-none-eabi gdb-multiarch qemu-system-arm cmake make git
 ```
 
 ---
 
-## 🚀 依赖初始化 (Dependency Setup)
+## 🚀 Dependency Setup
 
-`setup.sh` 只负责本地环境检查和外部依赖拉取：它会下载或更新官方 FreeRTOS 仓库，并初始化 `FreeRTOS/Source` 子模块。脚本不会重写 `src/`、`cmake/`、`CMakeLists.txt` 或其它业务源码，避免开发者本地改动被初始化流程覆盖。脚本同时支持 `FREERTOS_REPO` 和 `FREERTOS_REF` 环境变量，便于 CI 或离线镜像固定依赖来源与版本。
+`setup.sh` is responsible only for local environment checks and external dependency fetching. It downloads or updates the official FreeRTOS repository and initializes the `FreeRTOS/Source` submodule. The script does not rewrite `src/`, `cmake/`, `CMakeLists.txt`, or other business source code, which prevents the initialization flow from overwriting local developer changes. The script also supports the `FREERTOS_REPO` and `FREERTOS_REF` environment variables so that CI systems or offline mirrors can pin the dependency source and version.
 
-在项目根目录下直接运行：
+Run the following commands directly from the project root:
 
 ```bash
-# 1. 赋予脚本执行权限
+# 1. Grant execute permission to the script
 chmod +x setup.sh
 
-# 2. 拉取/更新 FreeRTOS 依赖
+# 2. Fetch/update the FreeRTOS dependency
 ./setup.sh
 ```
 
-### 📋 脚本执行的自动化流程：
-1. **工具检查**：要求 `git` 存在；对 `cmake`、`make`、`arm-none-eabi-gcc`、`qemu-system-arm` 等构建/仿真工具给出缺失警告，但不阻止依赖拉取。
-2. **依赖检索**：如果 `FreeRTOS/` 不存在，则克隆官方 FreeRTOS 仓库并拉取子模块。
-3. **安全更新**：如果 `FreeRTOS/` 已经是 git checkout，则执行 fast-forward 更新和子模块初始化。
-4. **覆盖保护**：如果 `FreeRTOS/` 是非空、非 git 目录，脚本会先询问是否覆盖；在 CI 等非交互环境中会拒绝覆盖，除非显式传入 `./setup.sh --force`。
-5. **接口自检**：`./setup.sh --check-only` 仅检查脚本参数与宿主工具提示，不下载或修改依赖，适合 CI 先验证脚本入口。
-6. **依赖校验**：确认 `FreeRTOS/FreeRTOS/Source/tasks.c` 存在，否则给出明确错误并终止。
+### 📋 Automated Script Flow
+
+1. **Tool Checks**: Requires `git`; emits missing-tool warnings for build/simulation tools such as `cmake`, `make`, `arm-none-eabi-gcc`, and `qemu-system-arm`, but does not block dependency fetching.
+2. **Dependency Retrieval**: If `FreeRTOS/` does not exist, the script clones the official FreeRTOS repository and fetches its submodules.
+3. **Safe Update**: If `FreeRTOS/` is already a git checkout, the script performs a fast-forward update and initializes submodules.
+4. **Overwrite Protection**: If `FreeRTOS/` is a non-empty, non-git directory, the script asks whether to overwrite it. In non-interactive environments such as CI, it refuses to overwrite unless `./setup.sh --force` is explicitly passed.
+5. **Interface Self-Check**: `./setup.sh --check-only` checks only script arguments and host-tool hints without downloading or modifying dependencies, which is suitable for validating the script entry point in CI.
+6. **Dependency Validation**: Confirms that `FreeRTOS/FreeRTOS/Source/tasks.c` exists. Otherwise, it prints a clear error and exits.
 
 ---
 
-## ⚙️ 项目编译指南
+## ⚙️ Build Guide
 
-完成依赖初始化后，即可使用 **CMake** 进行编译。首次配置时必须显式传入 ARM 裸机工具链文件，确保 CMake 在 `project()` 语言检测前就选择 `arm-none-eabi-gcc`，而不是宿主机编译器。CMake 会在配置阶段检查 `FreeRTOS/FreeRTOS/Source/tasks.c`，依赖缺失时会明确提示运行 `./setup.sh` 或通过 `-DFREERTOS_ROOT=/path/to/FreeRTOS` 指定已有 checkout：
+After dependency initialization, the project can be built with **CMake**. During the first configuration, you must explicitly pass the ARM bare-metal toolchain file. This ensures CMake selects `arm-none-eabi-gcc` before the `project()` language checks, instead of using the host compiler. During configuration, CMake checks for `FreeRTOS/FreeRTOS/Source/tasks.c`; if the dependency is missing, it clearly prompts you to run `./setup.sh` or pass an existing checkout through `-DFREERTOS_ROOT=/path/to/FreeRTOS`:
 
 ```bash
-# 1. 使用 ARM 裸机工具链文件配置 build 目录
+# 1. Configure the build directory with the ARM bare-metal toolchain file
 cmake -S . -B build -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake
 
-# 2. 编译（将生成最终的 RTOSDemo 固件）
+# 2. Build the firmware (produces the final RTOSDemo firmware image)
 cmake --build build
 ```
 
 ---
 
-## 🎮 QEMU 仿真与人机交互
+## 🎮 QEMU Simulation and Human-Machine Interaction
 
-在 `build` 目录下，执行以下命令在 QEMU 的 Cortex-M3 虚拟机器上启动固件：
+From the `build` directory, run the following command to start the firmware on QEMU's Cortex-M3 virtual machine:
 
 ```bash
 qemu-system-arm -M lm3s6965evb -kernel RTOSDemo -nographic
 ```
 
-### 💻 交互命令手册
+### 💻 Interactive Command Reference
 
-系统正常启动后，终端将输出：
+After the system starts normally, the terminal prints:
+
 ```text
 ==============================================
   Elevator Diagnostics Console (CLI) Ready
@@ -130,11 +140,11 @@ qemu-system-arm -M lm3s6965evb -kernel RTOSDemo -nographic
 elevator> 
 ```
 
-你可以在控制台输入以下指令进行实时设备诊断与呼叫交互：
+You can enter the following commands in the console for real-time device diagnostics and call interaction:
 
-*   **`help`**：查看支持的指令菜单。
-*   **`status`**：即时跨任务查询电梯物理状态。
-*   **`call <1-3>`**：呼叫电梯。例如输入 `call 3` 并按下回车，电梯状态机即被唤醒并开始模拟物理位移，此时你可以尝试输入 `status` 进行并发查询：
+* **`help`**: Show the supported command menu.
+* **`status`**: Query the elevator's physical state across tasks immediately.
+* **`call <1-3>`**: Call the elevator. For example, enter `call 3` and press Enter. The elevator state machine wakes up and starts simulating physical movement. During this process, you can try entering `status` for concurrent querying:
 
 ```text
 elevator> call 3
@@ -151,7 +161,8 @@ elevator>   >> Elevator arrived at floor 2.
 [FSM] Door: CLOSED. Elevator is now IDLE.
 ```
 
-### 🚪 如何退出模拟器
-由于 QEMU 接管了终端，若要退出模拟器回到 Linux 控制台，请在终端中按下：
-*   同时按下 **`Ctrl + A`**，松开后，按下字母 **`X`** 键。
-```
+### 🚪 How to Exit the Simulator
+
+Because QEMU takes over the terminal, press the following key sequence to exit the simulator and return to the Linux console:
+
+* Press **`Ctrl + A`** together, release them, and then press the **`X`** key.
