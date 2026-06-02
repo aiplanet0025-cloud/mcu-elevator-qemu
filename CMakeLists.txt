@@ -1,7 +1,30 @@
 cmake_minimum_required(VERSION 3.13)
 
+option(BUILD_HOST_TESTS "Build host-side unit tests for pure-C application logic" OFF)
+
+if(BUILD_HOST_TESTS)
+    project(RTOSDemoHostTests C)
+
+    enable_testing()
+
+    add_library(elevator_fsm STATIC
+        src/app/elevator_fsm.c
+    )
+    target_include_directories(elevator_fsm PUBLIC
+        src/app
+    )
+
+    add_executable(elevator_fsm_test
+        tests/elevator_fsm_test.c
+    )
+    target_link_libraries(elevator_fsm_test PRIVATE elevator_fsm)
+
+    add_test(NAME elevator_fsm_test COMMAND elevator_fsm_test)
+    return()
+endif()
+
 if(NOT CMAKE_TOOLCHAIN_FILE)
-    message(FATAL_ERROR "Please configure with -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake so CMake detects arm-none-eabi-gcc before project().")
+    message(FATAL_ERROR "Please configure with -DCMAKE_TOOLCHAIN_FILE=cmake/toolchain-arm-none-eabi.cmake so CMake detects arm-none-eabi-gcc before project(). For host unit tests, configure with -DBUILD_HOST_TESTS=ON instead.")
 endif()
 
 # FreeRTOS dependency. setup.sh downloads the upstream repository into FreeRTOS/.
