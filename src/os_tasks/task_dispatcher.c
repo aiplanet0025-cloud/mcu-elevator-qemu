@@ -8,7 +8,8 @@
 #include <stdlib.h>
 
 extern QueueHandle_t xDispatcherQueue;
-extern QueueHandle_t xFloorQueue; // Reused for sending to specific elevators
+extern QueueHandle_t xElevator1Queue;
+extern QueueHandle_t xElevator2Queue;
 extern ElevatorFsm g_elevator_fsm1;
 extern ElevatorFsm g_elevator_fsm2;
 
@@ -30,15 +31,21 @@ void vTaskDispatcher(void *pvParameters) {
             ElevatorEvent xAssignEvent;
             xAssignEvent.targetFloor = xReceivedEvent.targetFloor;
             
+            QueueHandle_t targetQueue;
             if (cost1 <= cost2) {
                 xAssignEvent.elevator_id = 1;
+                targetQueue = xElevator1Queue;
                 Logger_Info("[Dispatcher] Assigning floor %d to Elevator 1\r\n", xReceivedEvent.targetFloor);
             } else {
                 xAssignEvent.elevator_id = 2;
+                targetQueue = xElevator2Queue;
                 Logger_Info("[Dispatcher] Assigning floor %d to Elevator 2\r\n", xReceivedEvent.targetFloor);
             }
-            
-            xQueueSend(xFloorQueue, &xAssignEvent, 0);
+
+            if (xQueueSend(targetQueue, &xAssignEvent, 0) != pdTRUE) {
+                Logger_Info("[Dispatcher] Error: Elevator %d queue is full; floor %d request dropped.\r\n",
+                            xAssignEvent.elevator_id, xAssignEvent.targetFloor);
+            }
         }
     }
 }
