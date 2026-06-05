@@ -12,7 +12,8 @@
 #include <stdio.h>
 
 // 1. 定义多任务通信队列句柄
-QueueHandle_t xFloorQueue = NULL;
+QueueHandle_t xElevator1Queue = NULL;
+QueueHandle_t xElevator2Queue = NULL;
 QueueHandle_t xDispatcherQueue = NULL;
 
 // 2. 将状态机实例提升为全局变量，供 CLI 任务跨任务安全读取
@@ -44,8 +45,10 @@ static StackType_t xDispatcherStack[ DISPATCHER_TASK_STACK_SIZE ];
 // 4. 消息队列的静态内存分配
 #define QUEUE_LENGTH 10
 #define ITEM_SIZE    sizeof(ElevatorEvent)
-static StaticQueue_t xStaticQueue;
-static uint8_t ucQueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
+static StaticQueue_t xStaticElevator1Queue;
+static uint8_t ucElevator1QueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
+static StaticQueue_t xStaticElevator2Queue;
+static uint8_t ucElevator2QueueStorageArea[ QUEUE_LENGTH * ITEM_SIZE ];
 
 static StaticQueue_t xStaticDispatcherQueue;
 static uint8_t ucDispatcherQueueStorageArea[ QUEUE_LENGTH * sizeof(DispatcherEvent) ];
@@ -57,11 +60,18 @@ int main(void) {
     Logger_Init();
 
     // 工业安全加固：使用静态 API 创建队列
-    xFloorQueue = xQueueCreateStatic(
-        QUEUE_LENGTH, 
-        ITEM_SIZE, 
-        ucQueueStorageArea, 
-        &xStaticQueue
+    xElevator1Queue = xQueueCreateStatic(
+        QUEUE_LENGTH,
+        ITEM_SIZE,
+        ucElevator1QueueStorageArea,
+        &xStaticElevator1Queue
+    );
+
+    xElevator2Queue = xQueueCreateStatic(
+        QUEUE_LENGTH,
+        ITEM_SIZE,
+        ucElevator2QueueStorageArea,
+        &xStaticElevator2Queue
     );
 
     xDispatcherQueue = xQueueCreateStatic(

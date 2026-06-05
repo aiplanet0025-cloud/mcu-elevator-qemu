@@ -5,7 +5,8 @@
 #include "elevator_event.h"
 #include "logger.h"
 
-extern QueueHandle_t xFloorQueue;
+extern QueueHandle_t xElevator1Queue;
+extern QueueHandle_t xElevator2Queue;
 
 // 任务：单个电梯的运行逻辑
 void vTaskElevator(void *pvParameters) {
@@ -13,21 +14,15 @@ void vTaskElevator(void *pvParameters) {
     Elevator_FsmInit(fsm, fsm->elevator_id);
     
     ElevatorEvent xReceivedEvent;
+    QueueHandle_t elevatorQueue = (fsm->elevator_id == 1) ? xElevator1Queue : xElevator2Queue;
     char log_buf[128];
 
     for (;;) {
-        // 如果电梯处于待机状态，则挂起任务，阻塞等待特定给该电梯的事件
-        // (简单实现：假设事件只发给它，或者所有电梯共享队列)
-        // 实际应用需要更复杂的队列调度，这里简化为所有任务从同一队列读取，检查 ID
-        
+        // 如果电梯处于待机状态，则阻塞等待调度器发往本电梯专属队列的事件。
+        // 每部电梯使用独立队列，避免共享队列中某部电梯误取并丢弃另一部电梯的 call 命令。
         if (fsm->state == ELEVATOR_STATE_IDLE) {
-            if (xQueueReceive(xFloorQueue, &xReceivedEvent, portMAX_DELAY) == pdTRUE) {
-                if (xReceivedEvent.elevator_id == fsm->elevator_id) {
-                    Elevator_FsmSetTarget(fsm, xReceivedEvent.targetFloor);
-                } else {
-                    // 不是发给我的事件，放回队列（注意：实际应该有独立的队列或调度器）
-                    // 简化版：这里简单忽略，因为是广播模型
-                }
+            if (xQueueReceive(elevatorQueue, &xReceivedEvent, portMAX_DELAY) == pdTRUE) {
+                Elevator_FsmSetTarget(fsm, xReceivedEvent.targetFloor);
             }
         }
 
