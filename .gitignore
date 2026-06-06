@@ -8,3 +8,4 @@ FreeRTOS/
 .DS_Store
 *.pyc
 build-host-tests/
+build_tests/
