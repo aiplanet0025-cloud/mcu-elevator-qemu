@@ -39,6 +39,12 @@ The project designs and implements an asynchronous interactive command line simi
 * **Character Echo and Delete Support**: Supports typed-character echo and physical erasure through VT100 backspace escape handling.
 * **Non-Blocking Command Parsing**: Through non-blocking UART reads combined with FreeRTOS queues, users can enter `status` to asynchronously query the running elevator state, such as position, direction, and motor state. This clearly demonstrates the concurrent multitasking advantages of a real-time operating system.
 
+### 5. Smart Load-Balanced Dispatching (Optimal Cost Scheduling)
+
+To achieve high operating efficiency and avoid dispatcher cost imbalance (where busy elevators might be unfairly penalized or poorly utilized):
+* **Dynamic Cost Estimation**: The scheduler (`task_dispatcher.c`) evaluates the cost of dispatching a target floor request to each elevator using a state-aware cost estimation algorithm. It considers the elevator's current direction, current floor, target floor, and door state rather than using a static penalty for non-idle states.
+* **Balanced Load Distribution**: This ensures that requests are assigned to the elevator that can service them quickest, resulting in optimal pathing and shorter wait times under high-concurrency/stress conditions.
+
 ---
 
 ## 📁 Project Directory Structure
@@ -65,6 +71,9 @@ The project designs and implements an asynchronous interactive command line simi
 │       ├── logger.c           # Mutex-protected log output
 │       ├── task_cli.h         # CLI interaction task header
 │       └── task_cli.c         # Diagnostic console character-stream parser
+├── tests/                     # Host-based unit and stress tests
+│   ├── elevator_fsm_test.c    # Elevator FSM state transition test
+│   └── dispatcher_stress_test.c # Dispatcher load balancing and scheduling cost test
 ```
 
 ---
@@ -133,7 +142,9 @@ cmake --build build-host-tests
 ctest --test-dir build-host-tests --output-on-failure
 ```
 
-The host-test workflow builds `elevator_fsm.c` as a small static library and links it into `tests/elevator_fsm_test.c`. The tests cover initialization, idle behavior, upward and downward travel, door-open timing, return to idle, and rejection of target changes while the state machine is busy.
+The host-test workflow builds the core modules as small static libraries and links them into:
+* **`tests/elevator_fsm_test.c`**: Covers FSM initialization, idle behavior, upward and downward travel, door-open timing, return to idle, and rejection of target changes while the state machine is busy.
+* **`tests/dispatcher_stress_test.c`**: Simulates concurrent floor requests to verify that the smart elevator scheduling cost estimation algorithm assigns tasks and balances load dynamically and accurately.
 
 ---
 
