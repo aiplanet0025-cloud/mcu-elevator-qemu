@@ -14,11 +14,47 @@ extern ElevatorFsm g_elevator_fsm1;
 extern ElevatorFsm g_elevator_fsm2;
 
 static int calculate_cost(ElevatorFsm *fsm, int target_floor) {
-    if (fsm->state != ELEVATOR_STATE_IDLE) {
-        return 1000; // Busy elevators are high cost
+    int cost = 0;
+    
+    switch (fsm->state) {
+        case ELEVATOR_STATE_IDLE:
+            cost = abs(fsm->current_floor - target_floor);
+            break;
+
+        case ELEVATOR_STATE_MOVING_UP:
+            if (target_floor >= fsm->current_floor) {
+                // Target floor is ahead in the same direction of travel
+                cost = target_floor - fsm->current_floor;
+            } else {
+                // Target is behind us; must complete current trip first, then reverse
+                cost = (fsm->target_floor - fsm->current_floor) + abs(fsm->target_floor - target_floor) + 2;
+            }
+            break;
+
+        case ELEVATOR_STATE_MOVING_DOWN:
+            if (target_floor <= fsm->current_floor) {
+                // Target floor is ahead in the same direction of travel
+                cost = fsm->current_floor - target_floor;
+            } else {
+                // Target is behind us; must complete current trip first, then reverse
+                cost = (fsm->current_floor - fsm->target_floor) + abs(fsm->target_floor - target_floor) + 2;
+            }
+            break;
+
+        case ELEVATOR_STATE_DOOR_OPENING:
+        case ELEVATOR_STATE_DOOR_OPEN:
+        case ELEVATOR_STATE_DOOR_CLOSING:
+            // Stopped but doors are operating; simple distance plus a small door cycle penalty
+            cost = abs(fsm->current_floor - target_floor) + 2;
+            break;
+
+        default:
+            cost = 1000;
+            break;
     }
-    return abs(fsm->current_floor - target_floor);
+    return cost;
 }
+
 
 void vTaskDispatcher(void *pvParameters) {
     DispatcherEvent xReceivedEvent;

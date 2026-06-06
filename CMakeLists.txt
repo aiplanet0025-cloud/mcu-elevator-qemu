@@ -19,8 +19,14 @@ if(BUILD_HOST_TESTS)
     )
     target_link_libraries(elevator_fsm_test PRIVATE elevator_fsm)
 
+    add_executable(dispatcher_stress_test
+        tests/dispatcher_stress_test.c
+    )
+
     add_test(NAME elevator_fsm_test COMMAND elevator_fsm_test)
+    add_test(NAME dispatcher_stress_test COMMAND dispatcher_stress_test)
     return()
+
 endif()
 
 if(NOT CMAKE_TOOLCHAIN_FILE)
