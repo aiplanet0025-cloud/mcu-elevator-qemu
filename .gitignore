@@ -9,3 +9,4 @@ FreeRTOS/
 *.pyc
 build-host-tests/
 build_tests/
+.ipynb_checkpoints/
