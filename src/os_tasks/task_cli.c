@@ -25,19 +25,22 @@ static void parse_command(char *cmd) {
     } 
     else if (strncmp(cmd, "status ", 7) == 0) {
         int id = atoi(&cmd[7]);
-        ElevatorFsm *fsm = (id == 2) ? &g_elevator_fsm2 : &g_elevator_fsm1;
-        
-        const char *state_str = "UNKNOWN";
-        switch (fsm->state) {
-            case ELEVATOR_STATE_IDLE:          state_str = "IDLE"; break;
-            case ELEVATOR_STATE_MOVING_UP:     state_str = "MOVING UP"; break;
-            case ELEVATOR_STATE_MOVING_DOWN:   state_str = "MOVING DOWN"; break;
-            case ELEVATOR_STATE_DOOR_OPENING:  state_str = "DOOR OPENING"; break;
-            case ELEVATOR_STATE_DOOR_OPEN:     state_str = "DOOR OPEN"; break;
-            case ELEVATOR_STATE_DOOR_CLOSING:  state_str = "DOOR CLOSING"; break;
+        if (id < 1 || id > 2) {
+            Logger_Info("\r\n[CLI] Error: Invalid elevator id %d. Use 'status 1' or 'status 2'.\r\n", id);
+        } else {
+            ElevatorFsm *fsm = (id == 2) ? &g_elevator_fsm2 : &g_elevator_fsm1;
+            const char *state_str = "UNKNOWN";
+            switch (fsm->state) {
+                case ELEVATOR_STATE_IDLE:          state_str = "IDLE"; break;
+                case ELEVATOR_STATE_MOVING_UP:     state_str = "MOVING UP"; break;
+                case ELEVATOR_STATE_MOVING_DOWN:   state_str = "MOVING DOWN"; break;
+                case ELEVATOR_STATE_DOOR_OPENING:  state_str = "DOOR OPENING"; break;
+                case ELEVATOR_STATE_DOOR_OPEN:     state_str = "DOOR OPEN"; break;
+                case ELEVATOR_STATE_DOOR_CLOSING:  state_str = "DOOR CLOSING"; break;
+            }
+            Logger_Info("\r\n[Status E%d] Curr Floor: %d | Target Floor: %d | Motor State: %s\r\n", 
+                        fsm->elevator_id, fsm->current_floor, fsm->target_floor, state_str);
         }
-        Logger_Info("\r\n[Status E%d] Curr Floor: %d | Target Floor: %d | Motor State: %s\r\n", 
-                    fsm->elevator_id, fsm->current_floor, fsm->target_floor, state_str);
     } 
     else if (strncmp(cmd, "call ", 5) == 0) {
         int floor = atoi(&cmd[5]);
